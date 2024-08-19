@@ -46,7 +46,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
     }
 
     @Override
-    protected void openEditDialog(ItemClickEvent<CodingTask> event) {
+    protected void openClickOnColumnDialog(ItemClickEvent<CodingTask> event) {
         Dialog dialog = new Dialog();
         dialog.setWidth("80vw");
 

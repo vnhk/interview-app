@@ -46,7 +46,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
     }
 
     @Override
-    protected void openEditDialog(ItemClickEvent<QuestionConfig> event) {
+    protected void openClickOnColumnDialog(ItemClickEvent<QuestionConfig> event) {
         Dialog dialog = new Dialog();
         dialog.setWidth("80vw");
 
