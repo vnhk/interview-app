@@ -6,7 +6,7 @@ import com.bervan.ieentities.ExcelIEEntity;
 import com.bervan.ieentities.LoadIEAvailableEntities;
 import com.bervan.interviewapp.codingtask.CodingTaskService;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
-import com.bervan.interviewapp.onevalue.OneValueService;
+import com.bervan.common.onevalue.OneValueService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.notification.Notification;

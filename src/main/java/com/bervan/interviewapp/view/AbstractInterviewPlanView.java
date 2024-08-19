@@ -1,9 +1,7 @@
 package com.bervan.interviewapp.view;
 
 import com.bervan.common.AbstractOneValueView;
-import com.bervan.common.model.BaseOneValue;
-import com.bervan.interviewapp.onevalue.OneValue;
-import com.bervan.interviewapp.onevalue.OneValueService;
+import com.bervan.common.onevalue.OneValueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,10 +12,5 @@ public abstract class AbstractInterviewPlanView extends AbstractOneValueView {
 
     public AbstractInterviewPlanView(@Autowired OneValueService service) {
         super(new InterviewAppPageLayout(ROUTE_NAME), "interview-plan", "Interview Plan", service);
-    }
-
-    @Override
-    protected BaseOneValue createEmpty() {
-        return new OneValue();
     }
 }
