@@ -1,3 +1,4 @@
 /package-lock.json
 /target/
 /node_modules/
+/src/main/frontend/generated
