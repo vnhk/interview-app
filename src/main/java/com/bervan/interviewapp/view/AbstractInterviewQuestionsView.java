@@ -1,9 +1,9 @@
 package com.bervan.interviewapp.view;
 
+import com.bervan.common.AbstractTableView;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
 import com.bervan.interviewapp.interviewquestions.Question;
 import com.bervan.interviewapp.interviewquestions.QuestionTag;
-import com.bervan.common.AbstractTableView;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -24,6 +24,7 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
 
     public AbstractInterviewQuestionsView(@Autowired InterviewQuestionService questionService) {
         super(new InterviewAppPageLayout(ROUTE_NAME), questionService, "Interview Questions");
+        renderCommonComponents();
     }
 
     @Override
@@ -46,7 +47,7 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
     }
 
     @Override
-    protected void openClickOnColumnDialog(ItemClickEvent<Question> event) {
+    protected void doOnColumnClick(ItemClickEvent<Question> event) {
         Dialog dialog = new Dialog();
         dialog.setWidth("80vw");
 
@@ -112,7 +113,7 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
                 }
             }
             grid.getDataProvider().refreshItem(item);
-            service.save(data);
+            service.save(data.stream().toList());
             dialog.close();
         });
 
@@ -167,7 +168,7 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
             Question newQuestion = new Question(name, tags, difficulty, questionDetails, answerDetails, maxPoints);
             data.add(newQuestion);
             grid.setItems(data); // Refresh the grid
-            service.save(data);
+            service.save(data.stream().toList());
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, tagsComboBox, difficultyComboBox, questionDetailsField, answerDetailsField, maxPointsField, saveButton);

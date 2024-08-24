@@ -21,6 +21,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
 
     public AbstractQuestionConfigView(@Autowired QuestionConfigService service) {
         super(new InterviewAppPageLayout(ROUTE_NAME), service, "Coding Tasks");
+        renderCommonComponents();
     }
 
     @Override
@@ -46,7 +47,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
     }
 
     @Override
-    protected void openClickOnColumnDialog(ItemClickEvent<QuestionConfig> event) {
+    protected void doOnColumnClick(ItemClickEvent<QuestionConfig> event) {
         Dialog dialog = new Dialog();
         dialog.setWidth("80vw");
 
@@ -191,7 +192,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
             newQuestionConfig.setSpringSecurityAmount(s);
             data.add(newQuestionConfig);
             grid.setItems(data); // Refresh the grid
-            service.save(data);
+            service.save(data.stream().toList());
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, difficulty1Amount, difficulty2Amount, difficulty3Amount, difficulty4Amount, difficulty5Amount, saveButton);

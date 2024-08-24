@@ -24,6 +24,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
 
     public AbstractCodingTaskView(@Autowired CodingTaskService service) {
         super(new InterviewAppPageLayout(ROUTE_NAME), service, "Coding Tasks");
+        renderCommonComponents();
     }
 
     @Override
@@ -46,7 +47,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
     }
 
     @Override
-    protected void openClickOnColumnDialog(ItemClickEvent<CodingTask> event) {
+    protected void doOnColumnClick(ItemClickEvent<CodingTask> event) {
         Dialog dialog = new Dialog();
         dialog.setWidth("80vw");
 
@@ -101,7 +102,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
             }
 
             grid.getDataProvider().refreshItem(item);
-            service.save(data);
+            service.save(data.stream().toList());
             dialog.close();
         });
 
@@ -143,7 +144,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
             CodingTask newCodingTask = new CodingTask(name, initialCode, exampleCode, exampleCodeDetails, questions, LocalDateTime.now());
             data.add(newCodingTask);
             grid.setItems(data); // Refresh the grid
-            service.save(data);
+            service.save(data.stream().toList());
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, initialCodeField, exampleCodeField, exampleCodeDetailsField, questionsField, saveButton);

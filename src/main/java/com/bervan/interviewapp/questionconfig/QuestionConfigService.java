@@ -4,8 +4,10 @@ import com.bervan.ieentities.ExcelIEEntity;
 import com.bervan.common.service.BaseService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class QuestionConfigService implements BaseService<QuestionConfig> {
@@ -27,8 +29,8 @@ public class QuestionConfigService implements BaseService<QuestionConfig> {
     }
 
     @Override
-    public List<QuestionConfig> load() {
-        return repository.findAll();
+    public Set<QuestionConfig> load() {
+        return new HashSet<>(repository.findAll());
     }
 
     public List<HistoryQuestionConfig> loadHistory() {

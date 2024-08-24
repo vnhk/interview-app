@@ -4,7 +4,9 @@ import com.bervan.ieentities.ExcelIEEntity;
 import com.bervan.common.service.BaseService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class CodingTaskService implements BaseService<CodingTask> {
@@ -26,8 +28,8 @@ public class CodingTaskService implements BaseService<CodingTask> {
     }
 
     @Override
-    public List<CodingTask> load() {
-        return repository.findAll();
+    public Set<CodingTask> load() {
+        return new HashSet<>(repository.findAll());
     }
 
     public List<HistoryCodingTask> loadHistory() {
