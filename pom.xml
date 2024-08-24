@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.bervan</groupId>
+    <groupId>com.berva n</groupId>
     <artifactId>interview-app</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>interview-app</name>
