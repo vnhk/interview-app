@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.interviewquestions;
 
+import com.bervan.common.model.BervanLogger;
 import com.bervan.common.service.BaseService;
 import com.bervan.ieentities.ExcelIEEntity;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,12 @@ import java.util.Set;
 public class InterviewQuestionService implements BaseService<Question> {
     private final InterviewQuestionRepository repository;
     private final InterviewQuestionHistoryRepository historyRepository;
+    private final BervanLogger logger;
 
-    public InterviewQuestionService(InterviewQuestionRepository repository, InterviewQuestionHistoryRepository historyRepository) {
+    public InterviewQuestionService(InterviewQuestionRepository repository, InterviewQuestionHistoryRepository historyRepository, BervanLogger logger) {
         this.repository = repository;
         this.historyRepository = historyRepository;
+        this.logger = logger;
     }
 
     @Override
@@ -39,6 +42,7 @@ public class InterviewQuestionService implements BaseService<Question> {
 
     public void saveIfValid(List<? extends ExcelIEEntity> objects) {
         List<? extends ExcelIEEntity> list = objects.stream().filter(e -> e instanceof Question).toList();
+        logger.logDebug("Filtered Interview Questions to be imported: " + list.size());
         for (ExcelIEEntity excelIEEntity : list) {
             repository.save(((Question) excelIEEntity));
         }

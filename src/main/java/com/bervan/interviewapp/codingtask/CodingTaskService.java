@@ -1,7 +1,8 @@
 package com.bervan.interviewapp.codingtask;
 
-import com.bervan.ieentities.ExcelIEEntity;
+import com.bervan.common.model.BervanLogger;
 import com.bervan.common.service.BaseService;
+import com.bervan.ieentities.ExcelIEEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -12,10 +13,12 @@ import java.util.Set;
 public class CodingTaskService implements BaseService<CodingTask> {
     private final CodingTaskRepository repository;
     private final CodingTaskHistoryRepository historyRepository;
+    private final BervanLogger logger;
 
-    public CodingTaskService(CodingTaskRepository repository, CodingTaskHistoryRepository historyRepository) {
+    public CodingTaskService(CodingTaskRepository repository, CodingTaskHistoryRepository historyRepository, BervanLogger logger) {
         this.repository = repository;
         this.historyRepository = historyRepository;
+        this.logger = logger;
     }
 
     @Override
@@ -38,6 +41,7 @@ public class CodingTaskService implements BaseService<CodingTask> {
 
     public void saveIfValid(List<? extends ExcelIEEntity> objects) {
         List<? extends ExcelIEEntity> list = objects.stream().filter(e -> e instanceof CodingTask).toList();
+        logger.logDebug("Filtered Coding Tasks to be imported: " + list.size());
         for (ExcelIEEntity excelIEEntity : list) {
             repository.save(((CodingTask) excelIEEntity));
         }
