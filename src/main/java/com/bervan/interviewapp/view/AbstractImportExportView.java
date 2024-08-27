@@ -1,13 +1,16 @@
 package com.bervan.interviewapp.view;
 
+import com.bervan.common.onevalue.OneValue;
 import com.bervan.common.onevalue.OneValueService;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.ieentities.BaseExcelExport;
 import com.bervan.ieentities.BaseExcelImport;
 import com.bervan.ieentities.ExcelIEEntity;
-import com.bervan.ieentities.LoadIEAvailableEntities;
+import com.bervan.interviewapp.codingtask.CodingTask;
 import com.bervan.interviewapp.codingtask.CodingTaskService;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
+import com.bervan.interviewapp.interviewquestions.Question;
+import com.bervan.interviewapp.questionconfig.QuestionConfig;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.notification.Notification;
@@ -22,7 +25,6 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 public abstract class AbstractImportExportView extends VerticalLayout {
@@ -97,9 +99,12 @@ public abstract class AbstractImportExportView extends VerticalLayout {
             }
         }
 
-        LoadIEAvailableEntities loadIEAvailableEntities = new LoadIEAvailableEntities();
-        List<Class<?>> subclasses = loadIEAvailableEntities.getSubclassesOfExcelEntity("com.bervan.interviewapp")
-                .stream().filter(e -> !e.getName().contains("History")).collect(Collectors.toList());
+        List<Class<?>> subclasses = new ArrayList<>();
+        subclasses.add(CodingTask.class);
+        subclasses.add(OneValue.class);
+        subclasses.add(QuestionConfig.class);
+        subclasses.add(Question.class);
+
         logger.debug("Class that will be imported: " + subclasses);
         BaseExcelImport baseExcelImport = new BaseExcelImport(subclasses, logger);
         List<? extends ExcelIEEntity> objects = (List<? extends ExcelIEEntity>) baseExcelImport.importExcel(baseExcelImport.load(file));
