@@ -1,8 +1,8 @@
 package com.bervan.interviewapp.view;
 
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.bervan.common.AbstractPageView;
 
-public abstract class AbstractInterviewHomeView extends VerticalLayout {
+public abstract class AbstractInterviewHomeView extends AbstractPageView {
 
     public static final String ROUTE_NAME = "interview-app/home";
     private final InterviewAppPageLayout pageLayout;

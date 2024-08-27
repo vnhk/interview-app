@@ -51,6 +51,7 @@ public abstract class AbstractImportExportView extends VerticalLayout {
         this.interviewQuestionService = interviewQuestionService;
 
         Button prepareExportButton = new Button("Prepare data for export");
+        prepareExportButton.addClassName("option-button");
         add(prepareExportButton);
 
         MemoryBuffer buffer = new MemoryBuffer();

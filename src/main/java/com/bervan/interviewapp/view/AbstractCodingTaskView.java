@@ -59,6 +59,8 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
         }
 
         Button saveButton = new Button("Save");
+        saveButton.addClassName("option-button");
+
         saveButton.addClickListener(e -> {
             switch (clickedColumn) {
                 case "name" -> item.setName(field.getValue());
@@ -92,6 +94,8 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
         questionsField.setWidth("100%");
 
         Button saveButton = new Button("Save");
+        saveButton.addClassName("option-button");
+
         saveButton.addClickListener(e -> {
             String name = nameField.getValue();
             String initialCode = initialCodeField.getValue();

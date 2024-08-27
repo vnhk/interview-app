@@ -73,6 +73,8 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
         }
 
         Button saveButton = new Button("Save");
+        saveButton.addClassName("option-button");
+
         saveButton.addClickListener(e -> {
             if ("tags".equals(clickedColumn)) {
                 item.setTags(tagsComboBox.getValue().getDisplayName());
@@ -120,6 +122,8 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
         maxPointsField.setWidth("100%");
 
         Button saveButton = new Button("Save");
+        saveButton.addClassName("option-button");
+
         saveButton.addClickListener(e -> {
             String name = nameField.getValue();
             String tags = tagsComboBox.getValue().getDisplayName();

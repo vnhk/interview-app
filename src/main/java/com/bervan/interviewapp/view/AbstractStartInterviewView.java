@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.view;
 
+import com.bervan.common.AbstractPageView;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
 import com.bervan.interviewapp.interviewquestions.Question;
 import com.bervan.interviewapp.questionconfig.QuestionConfig;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-public abstract class AbstractStartInterviewView extends VerticalLayout {
+public abstract class AbstractStartInterviewView extends AbstractPageView {
     public static final String ROUTE_NAME = "interview-app/interview-process";
     public static final String L0 = "0-1";
     public static final String L1 = "1-2";
@@ -40,6 +41,7 @@ public abstract class AbstractStartInterviewView extends VerticalLayout {
         comboBox.setItems(experienceOptions);
 
         Button generateButton = new Button("Generate");
+        generateButton.addClassName("option-button");
 
         VerticalLayout interviewContent = new VerticalLayout();
         interviewContent.setVisible(false);

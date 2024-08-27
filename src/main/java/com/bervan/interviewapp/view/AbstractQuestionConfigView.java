@@ -101,6 +101,8 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
         }
 
         Button saveButton = new Button("Save");
+        saveButton.addClassName("option-button");
+
         saveButton.addClickListener(e -> {
 
             switch (clickedColumn) {
@@ -154,6 +156,8 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
         springSecurityAmount.setWidth("25%");
 
         Button saveButton = new Button("Save");
+        saveButton.addClassName("option-button");
+
         saveButton.addClickListener(e -> {
             String name = nameField.getValue();
             Integer a1 = difficulty1Amount.getValue();
