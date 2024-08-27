@@ -1,7 +1,7 @@
 package com.bervan.interviewapp.questionconfig;
 
-import com.bervan.ieentities.ExcelIEEntity;
 import com.bervan.common.service.BaseService;
+import com.bervan.ieentities.ExcelIEEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -24,8 +24,8 @@ public class QuestionConfigService implements BaseService<QuestionConfig> {
         repository.saveAll(data);
     }
 
-    public void save(QuestionConfig questionConfig) {
-        repository.save(questionConfig);
+    public QuestionConfig save(QuestionConfig questionConfig) {
+        return repository.save(questionConfig);
     }
 
     @Override

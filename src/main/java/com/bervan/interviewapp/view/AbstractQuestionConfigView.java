@@ -6,7 +6,6 @@ import com.bervan.interviewapp.questionconfig.QuestionConfigService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.ItemClickEvent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -47,18 +46,8 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
     }
 
     @Override
-    protected void doOnColumnClick(ItemClickEvent<QuestionConfig> event) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("80vw");
-
-        VerticalLayout dialogLayout = new VerticalLayout();
-
-        HorizontalLayout headerLayout = getDialogTopBarLayout(dialog);
-
-        String clickedColumn = event.getColumn().getKey();
+    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedColumn, QuestionConfig item) {
         TextFieldBase field;
-
-        QuestionConfig item = event.getItem();
 
         switch (clickedColumn) {
             case "name" -> {
@@ -111,7 +100,6 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
             default -> throw new RuntimeException("Invalid column!");
         }
 
-
         Button saveButton = new Button("Save");
         saveButton.addClickListener(e -> {
 
@@ -137,14 +125,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
     }
 
     @Override
-    protected void openAddDialog() {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("80vw");
-
-        VerticalLayout dialogLayout = new VerticalLayout();
-
-        HorizontalLayout headerLayout = getDialogTopBarLayout(dialog);
-
+    protected void buildNewItemDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout) {
         TextField nameField = new TextField("Name");
         nameField.setWidth("75%");
 
@@ -196,7 +177,5 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, difficulty1Amount, difficulty2Amount, difficulty3Amount, difficulty4Amount, difficulty5Amount, saveButton);
-        dialog.add(dialogLayout);
-        dialog.open();
     }
 }

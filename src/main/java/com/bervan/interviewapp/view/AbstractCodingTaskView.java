@@ -6,7 +6,6 @@ import com.bervan.interviewapp.codingtask.CodingTaskService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.ItemClickEvent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -47,58 +46,26 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
     }
 
     @Override
-    protected void doOnColumnClick(ItemClickEvent<CodingTask> event) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("80vw");
-
-        VerticalLayout dialogLayout = new VerticalLayout();
-
-        HorizontalLayout headerLayout = getDialogTopBarLayout(dialog);
-
-        String clickedColumn = event.getColumn().getKey();
+    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedColumn, CodingTask item) {
         TextArea field = new TextArea(clickedColumn);
         field.setWidth("100%");
 
-        CodingTask item = event.getItem();
-
         switch (clickedColumn) {
-            case "name":
-                field.setValue(item.getName());
-                break;
-            case "initialCode":
-                field.setValue(item.getInitialCode());
-                break;
-            case "exampleCode":
-                field.setValue(item.getExampleCode());
-                break;
-            case "exampleCodeDetails":
-                field.setValue(item.getExampleCodeDetails());
-                break;
-            case "questions":
-                field.setValue(item.getQuestions());
-                break;
+            case "name" -> field.setValue(item.getName());
+            case "initialCode" -> field.setValue(item.getInitialCode());
+            case "exampleCode" -> field.setValue(item.getExampleCode());
+            case "exampleCodeDetails" -> field.setValue(item.getExampleCodeDetails());
+            case "questions" -> field.setValue(item.getQuestions());
         }
-
 
         Button saveButton = new Button("Save");
         saveButton.addClickListener(e -> {
-
             switch (clickedColumn) {
-                case "name":
-                    item.setName(field.getValue());
-                    break;
-                case "initialCode":
-                    item.setInitialCode(field.getValue());
-                    break;
-                case "exampleCode":
-                    item.setExampleCode(field.getValue());
-                    break;
-                case "exampleCodeDetails":
-                    item.setExampleCodeDetails(field.getValue());
-                    break;
-                case "questions":
-                    item.setQuestions(field.getValue());
-                    break;
+                case "name" -> item.setName(field.getValue());
+                case "initialCode" -> item.setInitialCode(field.getValue());
+                case "exampleCode" -> item.setExampleCode(field.getValue());
+                case "exampleCodeDetails" -> item.setExampleCodeDetails(field.getValue());
+                case "questions" -> item.setQuestions(field.getValue());
             }
 
             grid.getDataProvider().refreshItem(item);
@@ -108,19 +75,10 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
 
 
         dialogLayout.add(headerLayout, field, saveButton);
-        dialog.add(dialogLayout);
-        dialog.open();
     }
 
     @Override
-    protected void openAddDialog() {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("80vw");
-
-        VerticalLayout dialogLayout = new VerticalLayout();
-
-        HorizontalLayout headerLayout = getDialogTopBarLayout(dialog);
-
+    protected void buildNewItemDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout) {
         TextField nameField = new TextField("Name");
         TextArea initialCodeField = new TextArea("Initial Code");
         TextArea exampleCodeField = new TextArea("Example Code");
@@ -148,7 +106,5 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, initialCodeField, exampleCodeField, exampleCodeDetailsField, questionsField, saveButton);
-        dialog.add(dialogLayout);
-        dialog.open();
     }
 }

@@ -26,8 +26,8 @@ public class CodingTaskService implements BaseService<CodingTask> {
         repository.saveAll(data);
     }
 
-    public void save(CodingTask codingTask) {
-        repository.save(codingTask);
+    public CodingTask save(CodingTask codingTask) {
+        return repository.save(codingTask);
     }
 
     @Override

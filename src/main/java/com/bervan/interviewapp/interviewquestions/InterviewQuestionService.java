@@ -27,8 +27,8 @@ public class InterviewQuestionService implements BaseService<Question> {
         repository.saveAll(data);
     }
 
-    public void save(Question codingTask) {
-        repository.save(codingTask);
+    public Question save(Question question) {
+        return repository.save(question);
     }
 
     @Override

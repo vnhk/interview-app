@@ -8,7 +8,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.ItemClickEvent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -47,15 +46,7 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
     }
 
     @Override
-    protected void doOnColumnClick(ItemClickEvent<Question> event) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("80vw");
-
-        VerticalLayout dialogLayout = new VerticalLayout();
-
-        HorizontalLayout headerLayout = getDialogTopBarLayout(dialog);
-
-        String clickedColumn = event.getColumn().getKey();
+    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedColumn, Question item) {
         TextArea field = new TextArea(clickedColumn);
         field.setWidth("100%");
 
@@ -68,25 +59,16 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
         difficultyComboBox.setItems(1, 2, 3, 4, 5);
         difficultyComboBox.setWidth("100%");
 
-        Question item = event.getItem();
         if ("tags".equals(clickedColumn)) {
             tagsComboBox.setValue(QuestionTag.valueOf(item.getTags().toUpperCase().replace("/", "_")));
         } else if ("difficulty".equals(clickedColumn)) {
             difficultyComboBox.setValue(item.getDifficulty());
         } else {
             switch (clickedColumn) {
-                case "name":
-                    field.setValue(item.getName());
-                    break;
-                case "questionDetails":
-                    field.setValue(item.getQuestionDetails());
-                    break;
-                case "answerDetails":
-                    field.setValue(item.getAnswerDetails());
-                    break;
-                case "maxPoints":
-                    field.setValue(String.valueOf(item.getMaxPoints()));
-                    break;
+                case "name" -> field.setValue(item.getName());
+                case "questionDetails" -> field.setValue(item.getQuestionDetails());
+                case "answerDetails" -> field.setValue(item.getAnswerDetails());
+                case "maxPoints" -> field.setValue(String.valueOf(item.getMaxPoints()));
             }
         }
 
@@ -98,18 +80,10 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
                 item.setDifficulty(difficultyComboBox.getValue());
             } else {
                 switch (clickedColumn) {
-                    case "name":
-                        item.setName(field.getValue());
-                        break;
-                    case "questionDetails":
-                        item.setQuestionDetails(field.getValue());
-                        break;
-                    case "answerDetails":
-                        item.setAnswerDetails(field.getValue());
-                        break;
-                    case "maxPoints":
-                        item.setMaxPoints(Double.parseDouble(field.getValue()));
-                        break;
+                    case "name" -> item.setName(field.getValue());
+                    case "questionDetails" -> item.setQuestionDetails(field.getValue());
+                    case "answerDetails" -> item.setAnswerDetails(field.getValue());
+                    case "maxPoints" -> item.setMaxPoints(Double.parseDouble(field.getValue()));
                 }
             }
             grid.getDataProvider().refreshItem(item);
@@ -124,21 +98,10 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
         } else {
             dialogLayout.add(headerLayout, field, saveButton);
         }
-
-        dialog.add(dialogLayout);
-
-        dialog.open();
     }
 
     @Override
-    protected void openAddDialog() {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("80vw");
-
-        VerticalLayout dialogLayout = new VerticalLayout();
-
-        HorizontalLayout headerLayout = getDialogTopBarLayout(dialog);
-
+    protected void buildNewItemDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout) {
         TextField nameField = new TextField("Name");
         ComboBox<QuestionTag> tagsComboBox = new ComboBox<>("Tags");
         tagsComboBox.setItems(QuestionTag.values());
@@ -172,7 +135,5 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, tagsComboBox, difficultyComboBox, questionDetailsField, answerDetailsField, maxPointsField, saveButton);
-        dialog.add(dialogLayout);
-        dialog.open();
     }
 }
