@@ -1,7 +1,7 @@
 package com.bervan.interviewapp.codingtask;
 
-import com.bervan.common.model.BervanLogger;
 import com.bervan.common.service.BaseService;
+import com.bervan.core.model.BervanLogger;
 import com.bervan.ieentities.ExcelIEEntity;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +41,7 @@ public class CodingTaskService implements BaseService<CodingTask> {
 
     public void saveIfValid(List<? extends ExcelIEEntity> objects) {
         List<? extends ExcelIEEntity> list = objects.stream().filter(e -> e instanceof CodingTask).toList();
-        logger.logDebug("Filtered Coding Tasks to be imported: " + list.size());
+        logger.debug("Filtered Coding Tasks to be imported: " + list.size());
         for (ExcelIEEntity excelIEEntity : list) {
             repository.save(((CodingTask) excelIEEntity));
         }

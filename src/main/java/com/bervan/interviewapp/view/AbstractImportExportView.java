@@ -1,7 +1,7 @@
 package com.bervan.interviewapp.view;
 
-import com.bervan.common.model.BervanLogger;
 import com.bervan.common.onevalue.OneValueService;
+import com.bervan.core.model.BervanLogger;
 import com.bervan.ieentities.BaseExcelExport;
 import com.bervan.ieentities.BaseExcelImport;
 import com.bervan.ieentities.ExcelIEEntity;
@@ -61,7 +61,7 @@ public abstract class AbstractImportExportView extends VerticalLayout {
                 importData(inputStream, fileName);
                 Notification.show("File uploaded successfully: " + fileName);
             } catch (Exception e) {
-                logger.logError("Failed to upload file: " + fileName, e);
+                logger.error("Failed to upload file: " + fileName, e);
                 Notification.show("Failed to upload file: " + fileName);
             }
         });
@@ -98,10 +98,12 @@ public abstract class AbstractImportExportView extends VerticalLayout {
         }
 
         LoadIEAvailableEntities loadIEAvailableEntities = new LoadIEAvailableEntities();
-        BaseExcelImport baseExcelImport = new BaseExcelImport(loadIEAvailableEntities.getSubclassesOfExcelEntity("com.bervan.interviewapp")
-                .stream().filter(e -> !e.getName().contains("History")).collect(Collectors.toList()));
+        List<Class<?>> subclasses = loadIEAvailableEntities.getSubclassesOfExcelEntity("com.bervan.interviewapp")
+                .stream().filter(e -> !e.getName().contains("History")).collect(Collectors.toList());
+        logger.debug("Class that will be imported: " + subclasses);
+        BaseExcelImport baseExcelImport = new BaseExcelImport(subclasses, logger);
         List<? extends ExcelIEEntity> objects = (List<? extends ExcelIEEntity>) baseExcelImport.importExcel(baseExcelImport.load(file));
-        logger.logDebug("Extracted " + objects.size() + " entities from excel.");
+        logger.debug("Extracted " + objects.size() + " entities from excel.");
         codingTaskService.saveIfValid(objects);
         oneValueService.saveIfValid(objects);
         interviewQuestionService.saveIfValid(objects);
@@ -122,7 +124,7 @@ public abstract class AbstractImportExportView extends VerticalLayout {
                 }
             });
         } catch (Exception e) {
-            logger.logError("Could not prepare export data.", e);
+            logger.error("Could not prepare export data.", e);
             pageLayout.notification("Could not prepare export data.");
         }
 
