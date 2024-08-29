@@ -1,10 +1,11 @@
 package com.bervan.interviewapp.interviewquestions;
 
+import com.bervan.common.model.PersistableTableData;
+import com.bervan.common.model.VaadinTableColumn;
 import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
-import com.bervan.common.model.PersistableTableData;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -21,22 +22,27 @@ public class Question implements AbstractBaseEntity<UUID>, PersistableTableData,
     @Id
     @GeneratedValue
     private UUID id;
+    @VaadinTableColumn(displayName = "Name", internalName = "name")
     private String name;
+    @VaadinTableColumn(displayName = "Tags", internalName = "tags", strValues = {"Java/DB/Testing", "Security", "Frameworks"})
     private String tags;
     @Min(1)
     @Max(5)
+    @VaadinTableColumn(displayName = "Difficulty", internalName = "difficulty", intValues = {1, 2, 3, 4, 5})
     private Integer difficulty;
     @Size(max = 50000)
+    @VaadinTableColumn(displayName = "Question Details", internalName = "questionDetails")
     private String questionDetails;
     @Size(max = 50000)
+    @VaadinTableColumn(displayName = "Answer Details", internalName = "answerDetails")
     private String answerDetails;
+    @VaadinTableColumn(displayName = "Max Points", internalName = "maxPoints")
     private Double maxPoints;
     private LocalDateTime modificationDate;
 
     @OneToMany(fetch = FetchType.EAGER)
     @HistoryCollection(historyClass = HistoryQuestion.class)
     private Set<HistoryQuestion> history = new HashSet<>();
-
 
     public Question(String name, String tags, int difficulty, String questionDetails, String answerDetails, double maxPoints) {
         this.name = name;

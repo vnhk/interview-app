@@ -13,7 +13,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,79 +28,67 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
 
     @Override
     protected Grid<Question> getGrid() {
-        Grid<Question> questionGrid = new Grid<>(Question.class, false);
-        questionGrid.addColumn(new ComponentRenderer<>(question -> formatTextComponent(question.getName())))
-                .setHeader("Name").setKey("name").setResizable(true).setSortable(true);
-        questionGrid.addColumn(new ComponentRenderer<>(question -> formatTextComponent(question.getTags())))
-                .setHeader("Tags").setKey("tags").setResizable(true).setSortable(true);
-        questionGrid.addColumn(Question::getDifficulty).setHeader("Difficulty").setKey("difficulty").setResizable(true)
-                .setSortable(true);
-        questionGrid.addColumn(new ComponentRenderer<>(question -> formatTextComponent(question.getQuestionDetails())))
-                .setHeader("Question Details").setKey("questionDetails").setResizable(true);
-        questionGrid.addColumn(new ComponentRenderer<>(question -> formatTextComponent(question.getAnswerDetails())))
-                .setHeader("Answer Details").setKey("answerDetails").setResizable(true);
-        questionGrid.addColumn(Question::getMaxPoints).setHeader("Max Points").setKey("maxPoints").setResizable(true);
-        questionGrid.getElement().getStyle().set("--lumo-size-m", 100 + "px");
-
-        return questionGrid;
+        Grid<Question> grid = new Grid<>(Question.class, false);
+        buildGridAutomatically(grid);
+        return grid;
     }
 
-    @Override
-    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedColumn, Question item) {
-        TextArea field = new TextArea(clickedColumn);
-        field.setWidth("100%");
-
-        ComboBox<QuestionTag> tagsComboBox = new ComboBox<>("Tags");
-        tagsComboBox.setItems(QuestionTag.values());
-        tagsComboBox.setItemLabelGenerator(QuestionTag::getDisplayName);
-        tagsComboBox.setWidth("100%");
-
-        ComboBox<Integer> difficultyComboBox = new ComboBox<>("Difficulty");
-        difficultyComboBox.setItems(1, 2, 3, 4, 5);
-        difficultyComboBox.setWidth("100%");
-
-        if ("tags".equals(clickedColumn)) {
-            tagsComboBox.setValue(QuestionTag.valueOf(item.getTags().toUpperCase().replace("/", "_")));
-        } else if ("difficulty".equals(clickedColumn)) {
-            difficultyComboBox.setValue(item.getDifficulty());
-        } else {
-            switch (clickedColumn) {
-                case "name" -> field.setValue(item.getName());
-                case "questionDetails" -> field.setValue(item.getQuestionDetails());
-                case "answerDetails" -> field.setValue(item.getAnswerDetails());
-                case "maxPoints" -> field.setValue(String.valueOf(item.getMaxPoints()));
-            }
-        }
-
-        Button saveButton = new Button("Save");
-        saveButton.addClassName("option-button");
-
-        saveButton.addClickListener(e -> {
-            if ("tags".equals(clickedColumn)) {
-                item.setTags(tagsComboBox.getValue().getDisplayName());
-            } else if ("difficulty".equals(clickedColumn)) {
-                item.setDifficulty(difficultyComboBox.getValue());
-            } else {
-                switch (clickedColumn) {
-                    case "name" -> item.setName(field.getValue());
-                    case "questionDetails" -> item.setQuestionDetails(field.getValue());
-                    case "answerDetails" -> item.setAnswerDetails(field.getValue());
-                    case "maxPoints" -> item.setMaxPoints(Double.parseDouble(field.getValue()));
-                }
-            }
-            grid.getDataProvider().refreshItem(item);
-            service.save(data.stream().toList());
-            dialog.close();
-        });
-
-        if ("tags".equals(clickedColumn)) {
-            dialogLayout.add(headerLayout, tagsComboBox, saveButton);
-        } else if ("difficulty".equals(clickedColumn)) {
-            dialogLayout.add(headerLayout, difficultyComboBox, saveButton);
-        } else {
-            dialogLayout.add(headerLayout, field, saveButton);
-        }
-    }
+//    @Override
+//    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedColumn, Question item) {
+//        TextArea field = new TextArea(clickedColumn);
+//        field.setWidth("100%");
+//
+//        ComboBox<QuestionTag> tagsComboBox = new ComboBox<>("Tags");
+//        tagsComboBox.setItems(QuestionTag.values());
+//        tagsComboBox.setItemLabelGenerator(QuestionTag::getDisplayName);
+//        tagsComboBox.setWidth("100%");
+//
+//        ComboBox<Integer> difficultyComboBox = new ComboBox<>("Difficulty");
+//        difficultyComboBox.setItems(1, 2, 3, 4, 5);
+//        difficultyComboBox.setWidth("100%");
+//
+//        if ("tags".equals(clickedColumn)) {
+//            tagsComboBox.setValue(QuestionTag.valueOf(item.getTags().toUpperCase().replace("/", "_")));
+//        } else if ("difficulty".equals(clickedColumn)) {
+//            difficultyComboBox.setValue(item.getDifficulty());
+//        } else {
+//            switch (clickedColumn) {
+//                case "name" -> field.setValue(item.getName());
+//                case "questionDetails" -> field.setValue(item.getQuestionDetails());
+//                case "answerDetails" -> field.setValue(item.getAnswerDetails());
+//                case "maxPoints" -> field.setValue(String.valueOf(item.getMaxPoints()));
+//            }
+//        }
+//
+//        Button saveButton = new Button("Save");
+//        saveButton.addClassName("option-button");
+//
+//        saveButton.addClickListener(e -> {
+//            if ("tags".equals(clickedColumn)) {
+//                item.setTags(tagsComboBox.getValue().getDisplayName());
+//            } else if ("difficulty".equals(clickedColumn)) {
+//                item.setDifficulty(difficultyComboBox.getValue());
+//            } else {
+//                switch (clickedColumn) {
+//                    case "name" -> item.setName(field.getValue());
+//                    case "questionDetails" -> item.setQuestionDetails(field.getValue());
+//                    case "answerDetails" -> item.setAnswerDetails(field.getValue());
+//                    case "maxPoints" -> item.setMaxPoints(Double.parseDouble(field.getValue()));
+//                }
+//            }
+//            grid.getDataProvider().refreshItem(item);
+//            service.save(data.stream().toList());
+//            dialog.close();
+//        });
+//
+//        if ("tags".equals(clickedColumn)) {
+//            dialogLayout.add(headerLayout, tagsComboBox, saveButton);
+//        } else if ("difficulty".equals(clickedColumn)) {
+//            dialogLayout.add(headerLayout, difficultyComboBox, saveButton);
+//        } else {
+//            dialogLayout.add(headerLayout, field, saveButton);
+//        }
+//    }
 
     @Override
     protected void buildNewItemDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout) {
