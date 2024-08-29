@@ -35,6 +35,11 @@ public class CodingTaskService implements BaseService<CodingTask> {
         return new HashSet<>(repository.findAll());
     }
 
+    @Override
+    public void delete(CodingTask item) {
+        repository.delete(item);
+    }
+
     public List<HistoryCodingTask> loadHistory() {
         return historyRepository.findAll();
     }

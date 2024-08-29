@@ -33,6 +33,11 @@ public class QuestionConfigService implements BaseService<QuestionConfig> {
         return new HashSet<>(repository.findAll());
     }
 
+    @Override
+    public void delete(QuestionConfig item) {
+        repository.delete(item);
+    }
+
     public List<HistoryQuestionConfig> loadHistory() {
         return historyRepository.findAll();
     }

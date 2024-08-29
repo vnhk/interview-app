@@ -36,6 +36,11 @@ public class InterviewQuestionService implements BaseService<Question> {
         return new HashSet<>(repository.findAll());
     }
 
+    @Override
+    public void delete(Question item) {
+        repository.delete(item);
+    }
+
     public List<HistoryQuestion> loadHistory() {
         return historyRepository.findAll();
     }
