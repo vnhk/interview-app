@@ -22,7 +22,7 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Q
 
 
     public AbstractInterviewQuestionsView(@Autowired InterviewQuestionService questionService, BervanLogger log) {
-        super(new InterviewAppPageLayout(ROUTE_NAME), questionService, "Interview Questions", log);
+        super(new InterviewAppPageLayout(ROUTE_NAME), questionService, "Interview Questions", log, Question.class);
         renderCommonComponents();
     }
 
