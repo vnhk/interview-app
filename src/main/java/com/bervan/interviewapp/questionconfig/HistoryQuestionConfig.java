@@ -41,7 +41,7 @@ public class HistoryQuestionConfig implements AbstractBaseHistoryEntity<UUID>, P
 
     }
 
-    public String getName() {
+    public String getTableFilterableColumnValue() {
         return name;
     }
 

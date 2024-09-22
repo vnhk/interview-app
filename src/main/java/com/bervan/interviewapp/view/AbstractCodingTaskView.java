@@ -2,8 +2,8 @@ package com.bervan.interviewapp.view;
 
 import com.bervan.common.AbstractTableView;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.interviewapp.codingtask.CodingTask;
-import com.bervan.interviewapp.codingtask.CodingTaskService;
+import com.bervan.interviewapp.pocketitem.CodingTask;
+import com.bervan.interviewapp.pocketitem.CodingTaskService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -30,7 +30,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
     @Override
     protected Grid<CodingTask> getGrid() {
         Grid<CodingTask> grid = new Grid<>(CodingTask.class, false);
-        grid.addColumn(new ComponentRenderer<>(CodingTask -> formatTextComponent(CodingTask.getName())))
+        grid.addColumn(new ComponentRenderer<>(CodingTask -> formatTextComponent(CodingTask.getTableFilterableColumnValue())))
                 .setHeader("Name").setKey("name").setResizable(true).setSortable(true);
         grid.addColumn(new ComponentRenderer<>(CodingTask -> formatTextComponent(CodingTask.getInitialCode())))
                 .setHeader("Initial Code").setKey("initialCode").setResizable(true);
@@ -52,7 +52,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
         field.setWidth("100%");
 
         switch (clickedColumn) {
-            case "name" -> field.setValue(item.getName());
+            case "name" -> field.setValue(item.getTableFilterableColumnValue());
             case "initialCode" -> field.setValue(item.getInitialCode());
             case "exampleCode" -> field.setValue(item.getExampleCode());
             case "exampleCodeDetails" -> field.setValue(item.getExampleCodeDetails());

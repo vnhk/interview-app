@@ -27,7 +27,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
     @Override
     protected Grid<QuestionConfig> getGrid() {
         Grid<QuestionConfig> grid = new Grid<>(QuestionConfig.class, false);
-        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(questionConfig.getName())))
+        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(questionConfig.getTableFilterableColumnValue())))
                 .setHeader("Name").setKey("name").setResizable(true).setSortable(true);
         grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(String.valueOf(questionConfig.getDifficulty1Amount()))))
                 .setHeader("Level 1 Questions").setKey("difficulty1Amount").setResizable(true);
@@ -54,7 +54,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
             case "name" -> {
                 field = new IntegerField("Name");
                 field.setWidth("100%");
-                field.setValue(item.getName());
+                field.setValue(item.getTableFilterableColumnValue());
             }
             case "difficulty1Amount" -> {
                 IntegerField integerField = new IntegerField("Level 1 Questions");

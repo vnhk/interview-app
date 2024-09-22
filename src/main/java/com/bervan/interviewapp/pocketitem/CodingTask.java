@@ -1,8 +1,7 @@
-package com.bervan.interviewapp.codingtask;
+package com.bervan.interviewapp.pocketitem;
 
-import com.bervan.history.model.AbstractBaseHistoryEntity;
-import com.bervan.history.model.HistoryField;
-import com.bervan.history.model.HistoryOwnerEntity;
+import com.bervan.history.model.AbstractBaseEntity;
+import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import com.bervan.common.model.PersistableTableData;
@@ -10,48 +9,45 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @HistorySupported
-public class HistoryCodingTask implements AbstractBaseHistoryEntity<UUID>, PersistableTableData, ExcelIEEntity<UUID> {
-    @HistoryField
+public class CodingTask implements AbstractBaseEntity<UUID>, PersistableTableData, ExcelIEEntity<UUID> {
     private String name;
-    @HistoryField
-    @Size(max = 50000)
+    @Lob
     private String initialCode;
-    @HistoryField
-    @Size(max = 50000)
+    @Lob
     private String exampleCode;
-    @HistoryField
-    @Size(max = 50000)
+    @Lob
     private String exampleCodeDetails;
-    @HistoryField
-    @Size(max = 50000)
+    @Lob
     private String questions;
-    private LocalDateTime updateDate;
+    private LocalDateTime modificationDate;
     @Id
     @GeneratedValue
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @HistoryOwnerEntity
-    private CodingTask codingTask;
+    @OneToMany(fetch = FetchType.EAGER)
+    @HistoryCollection(historyClass = HistoryCodingTask.class)
+    private Set<HistoryCodingTask> history = new HashSet<>();
 
-    public HistoryCodingTask(String name, String initialCode, String exampleCode, String exampleCodeDetails, String questions, LocalDateTime modificationDate) {
+    public CodingTask(String name, String initialCode, String exampleCode, String exampleCodeDetails, String questions, LocalDateTime modificationDate) {
         this.name = name;
         this.initialCode = initialCode;
         this.exampleCode = exampleCode;
         this.exampleCodeDetails = exampleCodeDetails;
         this.questions = questions;
-        this.updateDate = modificationDate;
+        this.modificationDate = modificationDate;
     }
 
-    public HistoryCodingTask() {
+    public CodingTask() {
 
     }
 
-    public String getName() {
+    public String getTableFilterableColumnValue() {
         return name;
     }
 
@@ -100,20 +96,20 @@ public class HistoryCodingTask implements AbstractBaseHistoryEntity<UUID>, Persi
     }
 
     @Override
-    public LocalDateTime getUpdateDate() {
-        return updateDate;
+    public LocalDateTime getModificationDate() {
+        return modificationDate;
     }
 
     @Override
-    public void setUpdateDate(LocalDateTime updateDate) {
-        this.updateDate = updateDate;
+    public void setModificationDate(LocalDateTime modificationDate) {
+        this.modificationDate = modificationDate;
     }
 
-    public CodingTask getCodingTask() {
-        return codingTask;
+    public Set<HistoryCodingTask> getHistory() {
+        return history;
     }
 
-    public void setCodingTask(CodingTask codingTask) {
-        this.codingTask = codingTask;
+    public void setHistory(Set<HistoryCodingTask> history) {
+        this.history = history;
     }
 }

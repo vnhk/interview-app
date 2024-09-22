@@ -27,10 +27,10 @@ public class HistoryQuestion implements AbstractBaseHistoryEntity<UUID>, Persist
     @HistoryField
     private Integer difficulty;
     @HistoryField
-    @Size(max = 50000)
+    @Lob
     private String questionDetails;
     @HistoryField
-    @Size(max = 50000)
+    @Lob
     private String answerDetails;
     @HistoryField
     private Double maxPoints;
@@ -54,7 +54,7 @@ public class HistoryQuestion implements AbstractBaseHistoryEntity<UUID>, Persist
 
     }
 
-    public String getName() {
+    public String getTableFilterableColumnValue() {
         return name;
     }
 

@@ -38,7 +38,7 @@ public class QuestionConfig implements AbstractBaseEntity<UUID>, PersistableTabl
 
     }
 
-    public String getName() {
+    public String getTableFilterableColumnValue() {
         return name;
     }
 

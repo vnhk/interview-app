@@ -85,7 +85,7 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
 
     private HorizontalLayout buildQuestionView(Question question) {
         HorizontalLayout result = new HorizontalLayout();
-        Text t1 = new Text(question.getName());
+        Text t1 = new Text(question.getTableFilterableColumnValue());
         Text t2 = new Text(question.getQuestionDetails());
         Text t3 = new Text(question.getAnswerDetails());
 

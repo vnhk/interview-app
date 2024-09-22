@@ -1,4 +1,4 @@
-package com.bervan.interviewapp.codingtask;
+package com.bervan.interviewapp.pocketitem;
 
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BervanLogger;

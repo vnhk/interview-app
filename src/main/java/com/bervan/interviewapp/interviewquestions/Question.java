@@ -30,10 +30,10 @@ public class Question implements AbstractBaseEntity<UUID>, PersistableTableData,
     @Max(5)
     @VaadinTableColumn(displayName = "Difficulty", internalName = "difficulty", intValues = {1, 2, 3, 4, 5})
     private Integer difficulty;
-    @Size(max = 50000)
+    @Lob
     @VaadinTableColumn(displayName = "Question Details", internalName = "questionDetails")
     private String questionDetails;
-    @Size(max = 50000)
+    @Lob
     @VaadinTableColumn(displayName = "Answer Details", internalName = "answerDetails")
     private String answerDetails;
     @VaadinTableColumn(displayName = "Max Points", internalName = "maxPoints")
@@ -57,7 +57,7 @@ public class Question implements AbstractBaseEntity<UUID>, PersistableTableData,
 
     }
 
-    public String getName() {
+    public String getTableFilterableColumnValue() {
         return name;
     }
 
