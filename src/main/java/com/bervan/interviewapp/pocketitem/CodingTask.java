@@ -1,12 +1,11 @@
 package com.bervan.interviewapp.pocketitem;
 
+import com.bervan.common.model.PersistableTableData;
 import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
-import com.bervan.common.model.PersistableTableData;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -18,12 +17,16 @@ import java.util.UUID;
 public class CodingTask implements AbstractBaseEntity<UUID>, PersistableTableData, ExcelIEEntity<UUID> {
     private String name;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private String initialCode;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private String exampleCode;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private String exampleCodeDetails;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private String questions;
     private LocalDateTime modificationDate;
     @Id

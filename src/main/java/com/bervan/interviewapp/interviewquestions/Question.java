@@ -31,9 +31,11 @@ public class Question implements AbstractBaseEntity<UUID>, PersistableTableData,
     @VaadinTableColumn(displayName = "Difficulty", internalName = "difficulty", intValues = {1, 2, 3, 4, 5})
     private Integer difficulty;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     @VaadinTableColumn(displayName = "Question Details", internalName = "questionDetails")
     private String questionDetails;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     @VaadinTableColumn(displayName = "Answer Details", internalName = "answerDetails")
     private String answerDetails;
     @VaadinTableColumn(displayName = "Max Points", internalName = "maxPoints")
