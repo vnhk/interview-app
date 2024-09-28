@@ -9,7 +9,6 @@ import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -31,11 +30,9 @@ public class Question implements AbstractBaseEntity<UUID>, PersistableTableData,
     @VaadinTableColumn(displayName = "Difficulty", internalName = "difficulty", intValues = {1, 2, 3, 4, 5})
     private Integer difficulty;
     @Lob
-    @Column(columnDefinition = "BLOB")
     @VaadinTableColumn(displayName = "Question Details", internalName = "questionDetails")
     private String questionDetails;
     @Lob
-    @Column(columnDefinition = "BLOB")
     @VaadinTableColumn(displayName = "Answer Details", internalName = "answerDetails")
     private String answerDetails;
     @VaadinTableColumn(displayName = "Max Points", internalName = "maxPoints")

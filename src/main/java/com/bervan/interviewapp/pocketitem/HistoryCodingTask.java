@@ -19,19 +19,15 @@ public class HistoryCodingTask implements AbstractBaseHistoryEntity<UUID>, Persi
     private String name;
     @HistoryField
     @Lob
-    @Column(columnDefinition = "BLOB")
     private String initialCode;
     @HistoryField
     @Lob
-    @Column(columnDefinition = "BLOB")
     private String exampleCode;
     @HistoryField
     @Lob
-    @Column(columnDefinition = "BLOB")
     private String exampleCodeDetails;
     @HistoryField
     @Lob
-    @Column(columnDefinition = "BLOB")
     private String questions;
     private LocalDateTime updateDate;
     @Id
