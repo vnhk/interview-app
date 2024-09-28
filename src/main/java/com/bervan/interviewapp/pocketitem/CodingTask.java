@@ -17,16 +17,16 @@ import java.util.UUID;
 public class CodingTask implements AbstractBaseEntity<UUID>, PersistableTableData, ExcelIEEntity<UUID> {
     private String name;
     @Lob
-    @Column(columnDefinition = "MEDIUMBLOB")
+    @Column(columnDefinition = "BLOB")
     private String initialCode;
     @Lob
-    @Column(columnDefinition = "MEDIUMBLOB")
+    @Column(columnDefinition = "BLOB")
     private String exampleCode;
     @Lob
-    @Column(columnDefinition = "MEDIUMBLOB")
+    @Column(columnDefinition = "BLOB")
     private String exampleCodeDetails;
     @Lob
-    @Column(columnDefinition = "MEDIUMBLOB")
+    @Column(columnDefinition = "BLOB")
     private String questions;
     private LocalDateTime modificationDate;
     @Id

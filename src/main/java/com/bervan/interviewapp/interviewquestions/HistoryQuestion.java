@@ -28,11 +28,11 @@ public class HistoryQuestion implements AbstractBaseHistoryEntity<UUID>, Persist
     private Integer difficulty;
     @HistoryField
     @Lob
-    @Column(columnDefinition = "MEDIUMBLOB")
+    @Column(columnDefinition = "BLOB")
     private String questionDetails;
     @HistoryField
     @Lob
-    @Column(columnDefinition = "MEDIUMBLOB")
+    @Column(columnDefinition = "BLOB")
     private String answerDetails;
     @HistoryField
     private Double maxPoints;
