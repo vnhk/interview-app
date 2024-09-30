@@ -76,7 +76,7 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
                     }
                 }
             } else {
-                Notification.show("Please select a value from the dropdown.");
+                showWarningNotification("Please select a value from the dropdown.");
             }
         });
 

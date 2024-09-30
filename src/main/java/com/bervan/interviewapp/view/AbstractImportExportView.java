@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.view;
 
+import com.bervan.common.AbstractPageView;
 import com.bervan.common.onevalue.OneValue;
 import com.bervan.common.onevalue.OneValueService;
 import com.bervan.core.model.BervanLogger;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class AbstractImportExportView extends VerticalLayout {
+public abstract class AbstractImportExportView extends AbstractPageView {
     public static final String ROUTE_NAME = "interview-app/import-export-data";
     private final CodingTaskService codingTaskService;
     private final OneValueService oneValueService;
@@ -131,7 +132,7 @@ public abstract class AbstractImportExportView extends VerticalLayout {
             });
         } catch (Exception e) {
             logger.error("Could not prepare export data.", e);
-            pageLayout.notification("Could not prepare export data.");
+            showErrorNotification("Could not prepare export data.");
         }
 
         return null;
