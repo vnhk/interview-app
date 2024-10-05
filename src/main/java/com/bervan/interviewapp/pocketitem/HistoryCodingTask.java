@@ -7,7 +7,6 @@ import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import com.bervan.common.model.PersistableTableData;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
