@@ -1,9 +1,8 @@
 package com.bervan.interviewapp.view;
 
-import com.bervan.common.AbstractPageLayout;
-import com.vaadin.flow.component.html.Hr;
+import com.bervan.common.MenuNavigationComponent;
 
-public final class InterviewAppPageLayout extends AbstractPageLayout {
+public final class InterviewAppPageLayout extends MenuNavigationComponent {
 
     public InterviewAppPageLayout(String currentRouteName) {
         super(currentRouteName);
@@ -17,7 +16,5 @@ public final class InterviewAppPageLayout extends AbstractPageLayout {
         addButton(menuButtonsRow, AbstractImportExportView.ROUTE_NAME, "Import/Export");
 
         add(menuButtonsRow);
-        add(new Hr());
-
     }
 }

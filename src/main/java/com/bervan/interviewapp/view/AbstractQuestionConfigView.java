@@ -20,7 +20,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<Quest
 
 
     public AbstractQuestionConfigView(@Autowired QuestionConfigService service, BervanLogger log) {
-        super(new InterviewAppPageLayout(ROUTE_NAME), service, "Coding Tasks", log, QuestionConfig.class);
+        super(new InterviewAppPageLayout(ROUTE_NAME), service, log, QuestionConfig.class);
         renderCommonComponents();
     }
 

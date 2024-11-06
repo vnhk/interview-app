@@ -23,7 +23,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTas
 
 
     public AbstractCodingTaskView(@Autowired CodingTaskService service, BervanLogger log) {
-        super(new InterviewAppPageLayout(ROUTE_NAME), service, "Coding Tasks", log, CodingTask.class);
+        super(new InterviewAppPageLayout(ROUTE_NAME), service, log, CodingTask.class);
         renderCommonComponents();
     }
 
