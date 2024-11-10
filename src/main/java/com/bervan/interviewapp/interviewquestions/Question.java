@@ -2,6 +2,7 @@ package com.bervan.interviewapp.interviewquestions;
 
 import com.bervan.common.model.PersistableTableData;
 import com.bervan.common.model.VaadinTableColumn;
+import com.bervan.common.user.User;
 import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
@@ -9,6 +10,9 @@ import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -17,7 +21,8 @@ import java.util.UUID;
 
 @Entity
 @HistorySupported
-public class Question implements AbstractBaseEntity<UUID>, PersistableTableData, ExcelIEEntity<UUID> {
+
+public class Question implements AbstractBaseEntity<UUID>, PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     @Id
     @GeneratedValue
     private UUID id;
@@ -42,6 +47,19 @@ public class Question implements AbstractBaseEntity<UUID>, PersistableTableData,
     @OneToMany(fetch = FetchType.EAGER)
     @HistoryCollection(historyClass = HistoryQuestion.class)
     private Set<HistoryQuestion> history = new HashSet<>();
+
+    @ManyToOne
+    private User owner;
+
+    @Override
+    public User getOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setOwner(User user) {
+        this.owner = user;
+    }
 
     public Question(String name, String tags, int difficulty, String questionDetails, String answerDetails, double maxPoints) {
         this.name = name;

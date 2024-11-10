@@ -16,8 +16,10 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
-public abstract class AbstractInterviewQuestionsView extends AbstractTableView<Question> {
+public abstract class AbstractInterviewQuestionsView extends AbstractTableView<UUID, Question> {
     public static final String ROUTE_NAME = "interview-app/interview-questions";
 
 

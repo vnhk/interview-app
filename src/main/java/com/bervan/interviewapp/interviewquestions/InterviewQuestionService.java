@@ -1,17 +1,16 @@
 package com.bervan.interviewapp.interviewquestions;
 
+import com.bervan.common.service.AuthService;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.ieentities.ExcelIEEntity;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
-public class InterviewQuestionService implements BaseService<Question> {
+public class InterviewQuestionService implements BaseService<UUID, Question> {
     private final InterviewQuestionRepository repository;
     private final InterviewQuestionHistoryRepository historyRepository;
     private final BervanLogger logger;
@@ -32,6 +31,7 @@ public class InterviewQuestionService implements BaseService<Question> {
     }
 
     @Override
+    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
     public Set<Question> load() {
         return new HashSet<>(repository.findAll());
     }
@@ -41,6 +41,7 @@ public class InterviewQuestionService implements BaseService<Question> {
         repository.delete(item);
     }
 
+    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
     public List<HistoryQuestion> loadHistory() {
         return historyRepository.findAll();
     }
@@ -53,7 +54,8 @@ public class InterviewQuestionService implements BaseService<Question> {
         }
     }
 
+    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
     public List<Question> findByDifficultyNotSpringSecurity(Integer difficulty) {
-        return repository.findAllByDifficultyAndTagsIn(difficulty, Arrays.asList("Java/DB/Testing", "Frameworks"));
+        return repository.findAllByDifficultyAndTagsInAndOwnerId(difficulty, Arrays.asList("Java/DB/Testing", "Frameworks"), AuthService.getLoggedUserId());
     }
 }

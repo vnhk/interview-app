@@ -6,5 +6,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface InterviewQuestionRepository extends BaseRepository<Question, UUID> {
-    List<Question> findAllByDifficultyAndTagsIn(Integer difficulty, List<String> tags);
+    List<Question> findAllByDifficultyAndTagsInAndOwnerId(Integer difficulty, List<String> tags, UUID ownerId);
 }

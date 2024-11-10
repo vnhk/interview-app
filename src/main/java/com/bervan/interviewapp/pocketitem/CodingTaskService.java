@@ -3,14 +3,16 @@ package com.bervan.interviewapp.pocketitem;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.ieentities.ExcelIEEntity;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
-public class CodingTaskService implements BaseService<CodingTask> {
+public class CodingTaskService implements BaseService<UUID, CodingTask> {
     private final CodingTaskRepository repository;
     private final CodingTaskHistoryRepository historyRepository;
     private final BervanLogger logger;
@@ -31,6 +33,7 @@ public class CodingTaskService implements BaseService<CodingTask> {
     }
 
     @Override
+    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
     public Set<CodingTask> load() {
         return new HashSet<>(repository.findAll());
     }
@@ -40,6 +43,7 @@ public class CodingTaskService implements BaseService<CodingTask> {
         repository.delete(item);
     }
 
+    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
     public List<HistoryCodingTask> loadHistory() {
         return historyRepository.findAll();
     }

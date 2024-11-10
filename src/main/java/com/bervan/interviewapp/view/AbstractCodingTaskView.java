@@ -16,9 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Component
-public abstract class AbstractCodingTaskView extends AbstractTableView<CodingTask> {
+public abstract class AbstractCodingTaskView extends AbstractTableView<UUID, CodingTask> {
     public static final String ROUTE_NAME = "interview-app/coding-tasks";
 
 

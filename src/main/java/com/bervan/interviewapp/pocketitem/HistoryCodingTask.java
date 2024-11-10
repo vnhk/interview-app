@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.pocketitem;
 
+import com.bervan.common.user.User;
 import com.bervan.history.model.AbstractBaseHistoryEntity;
 import com.bervan.history.model.HistoryField;
 import com.bervan.history.model.HistoryOwnerEntity;
@@ -7,13 +8,17 @@ import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import com.bervan.common.model.PersistableTableData;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @HistorySupported
-public class HistoryCodingTask implements AbstractBaseHistoryEntity<UUID>, PersistableTableData, ExcelIEEntity<UUID> {
+
+public class HistoryCodingTask implements AbstractBaseHistoryEntity<UUID>, PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     @HistoryField
     private String name;
     @HistoryField
@@ -32,6 +37,19 @@ public class HistoryCodingTask implements AbstractBaseHistoryEntity<UUID>, Persi
     @Id
     @GeneratedValue
     private UUID id;
+
+    @ManyToOne
+    private User owner;
+
+    @Override
+    public User getOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setOwner(User user) {
+        this.owner = user;
+    }
 
     @ManyToOne(fetch = FetchType.EAGER)
     @HistoryOwnerEntity

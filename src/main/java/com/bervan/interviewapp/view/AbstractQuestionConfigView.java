@@ -15,7 +15,9 @@ import com.vaadin.flow.component.textfield.TextFieldBase;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class AbstractQuestionConfigView extends AbstractTableView<QuestionConfig> {
+import java.util.UUID;
+
+public abstract class AbstractQuestionConfigView extends AbstractTableView<UUID, QuestionConfig> {
     public static final String ROUTE_NAME = "interview-app/question-config";
 
 

@@ -1,16 +1,15 @@
 package com.bervan.interviewapp.questionconfig;
 
+import com.bervan.common.service.AuthService;
 import com.bervan.common.service.BaseService;
 import com.bervan.ieentities.ExcelIEEntity;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
-public class QuestionConfigService implements BaseService<QuestionConfig> {
+public class QuestionConfigService implements BaseService<UUID, QuestionConfig> {
     private final QuestionConfigRepository repository;
     private final QuestionConfigHistoryRepository historyRepository;
 
@@ -29,6 +28,7 @@ public class QuestionConfigService implements BaseService<QuestionConfig> {
     }
 
     @Override
+    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
     public Set<QuestionConfig> load() {
         return new HashSet<>(repository.findAll());
     }
@@ -38,6 +38,7 @@ public class QuestionConfigService implements BaseService<QuestionConfig> {
         repository.delete(item);
     }
 
+    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
     public List<HistoryQuestionConfig> loadHistory() {
         return historyRepository.findAll();
     }
@@ -49,7 +50,8 @@ public class QuestionConfigService implements BaseService<QuestionConfig> {
         }
     }
 
+    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
     public Optional<QuestionConfig> loadByName(String selectedLvl) {
-        return repository.findByName(selectedLvl);
+        return repository.findByNameAndOwnerId(selectedLvl, AuthService.getLoggedUserId());
     }
 }

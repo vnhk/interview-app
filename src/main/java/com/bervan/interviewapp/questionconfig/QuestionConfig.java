@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.questionconfig;
 
+import com.bervan.common.user.User;
 import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
@@ -7,6 +8,9 @@ import com.bervan.ieentities.ExcelIEEntity;
 import com.bervan.common.model.PersistableTableData;
 import jakarta.persistence.*;
 import org.checkerframework.common.aliasing.qual.Unique;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -15,8 +19,10 @@ import java.util.UUID;
 
 @Entity
 @HistorySupported
-public class QuestionConfig implements AbstractBaseEntity<UUID>, PersistableTableData, ExcelIEEntity<UUID> {
-    @Unique
+@Table(
+        uniqueConstraints = @UniqueConstraint(columnNames = {"name", "owner.id"})
+)
+public class QuestionConfig implements AbstractBaseEntity<UUID>, PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     private String name;
     private Integer difficulty1Amount;
     private Integer difficulty2Amount;
@@ -33,6 +39,18 @@ public class QuestionConfig implements AbstractBaseEntity<UUID>, PersistableTabl
     @HistoryCollection(historyClass = HistoryQuestionConfig.class)
     private Set<HistoryQuestionConfig> history = new HashSet<>();
 
+    @ManyToOne
+    private User owner;
+
+    @Override
+    public User getOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setOwner(User user) {
+        this.owner = user;
+    }
 
     public QuestionConfig() {
 
