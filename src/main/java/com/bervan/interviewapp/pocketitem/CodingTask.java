@@ -1,25 +1,20 @@
 package com.bervan.interviewapp.pocketitem;
 
+import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.user.User;
-import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
-
-public class CodingTask implements AbstractBaseEntity<UUID>, PersistableTableData<UUID>, ExcelIEEntity<UUID> {
+public class CodingTask extends BervanBaseEntity<UUID> implements  PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     private String name;
     @Lob
     private String initialCode;
@@ -34,18 +29,7 @@ public class CodingTask implements AbstractBaseEntity<UUID>, PersistableTableDat
     @GeneratedValue
     private UUID id;
 
-    @ManyToOne
-    private User owner;
 
-    @Override
-    public User getOwner() {
-        return owner;
-    }
-
-    @Override
-    public void setOwner(User user) {
-        this.owner = user;
-    }
 
     @OneToMany(fetch = FetchType.EAGER)
     @HistoryCollection(historyClass = HistoryCodingTask.class)

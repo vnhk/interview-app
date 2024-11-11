@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.interviewquestions;
 
+import com.bervan.common.model.BervanHistoryEntity;
 import com.bervan.common.model.PersistableTableData;
 import com.bervan.common.user.User;
 import com.bervan.history.model.AbstractBaseHistoryEntity;
@@ -16,8 +17,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
-public class HistoryQuestion implements AbstractBaseHistoryEntity<UUID>, PersistableTableData<UUID>,
+public class HistoryQuestion extends BervanHistoryEntity<UUID> implements  PersistableTableData<UUID>,
         ExcelIEEntity<UUID> {
     @Id
     @GeneratedValue
@@ -38,19 +40,6 @@ public class HistoryQuestion implements AbstractBaseHistoryEntity<UUID>, Persist
     @HistoryField
     private Double maxPoints;
     private LocalDateTime modificationDate;
-
-    @ManyToOne
-    private User owner;
-
-    @Override
-    public User getOwner() {
-        return owner;
-    }
-
-    @Override
-    public void setOwner(User user) {
-        this.owner = user;
-    }
 
     @ManyToOne(fetch = FetchType.EAGER)
     @HistoryOwnerEntity

@@ -1,24 +1,20 @@
 package com.bervan.interviewapp.questionconfig;
 
-import com.bervan.common.user.User;
-import com.bervan.history.model.AbstractBaseHistoryEntity;
+import com.bervan.common.model.BervanHistoryEntity;
+import com.bervan.common.model.PersistableTableData;
 import com.bervan.history.model.HistoryField;
 import com.bervan.history.model.HistoryOwnerEntity;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
-import com.bervan.common.model.PersistableTableData;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
-
-public class HistoryQuestionConfig implements AbstractBaseHistoryEntity<UUID>, PersistableTableData<UUID>, ExcelIEEntity<UUID> {
+public class HistoryQuestionConfig extends BervanHistoryEntity<UUID> implements PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     @HistoryField
     private String name;
     @HistoryField
@@ -37,19 +33,6 @@ public class HistoryQuestionConfig implements AbstractBaseHistoryEntity<UUID>, P
     @Id
     @GeneratedValue
     private UUID id;
-
-    @ManyToOne
-    private User owner;
-
-    @Override
-    public User getOwner() {
-        return owner;
-    }
-
-    @Override
-    public void setOwner(User user) {
-        this.owner = user;
-    }
 
     @ManyToOne(fetch = FetchType.EAGER)
     @HistoryOwnerEntity

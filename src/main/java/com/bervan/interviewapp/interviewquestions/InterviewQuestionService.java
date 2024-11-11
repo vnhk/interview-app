@@ -31,7 +31,7 @@ public class InterviewQuestionService implements BaseService<UUID, Question> {
     }
 
     @Override
-    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
+    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public Set<Question> load() {
         return new HashSet<>(repository.findAll());
     }
@@ -41,7 +41,7 @@ public class InterviewQuestionService implements BaseService<UUID, Question> {
         repository.delete(item);
     }
 
-    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
+    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<HistoryQuestion> loadHistory() {
         return historyRepository.findAll();
     }
@@ -54,8 +54,8 @@ public class InterviewQuestionService implements BaseService<UUID, Question> {
         }
     }
 
-    @PostFilter("filterObject.owner != null && filterObject.owner.getId().equals(T(com.bervan.common.service.AuthService).getLoggedUserId())")
+    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<Question> findByDifficultyNotSpringSecurity(Integer difficulty) {
-        return repository.findAllByDifficultyAndTagsInAndOwnerId(difficulty, Arrays.asList("Java/DB/Testing", "Frameworks"), AuthService.getLoggedUserId());
+        return repository.findAllByDifficultyAndTagsInAndOwnersId(difficulty, Arrays.asList("Java/DB/Testing", "Frameworks"), AuthService.getLoggedUserId());
     }
 }

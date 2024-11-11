@@ -96,11 +96,11 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
 
     private Map<Integer, Integer> getAmountOfLvlBasedQuestions(String selectedLvl) {
         Map<Integer, Integer> result = new HashMap<>();
-        Optional<QuestionConfig> questionConfig =
+        List<QuestionConfig> questionConfig =
                 questionConfigService.loadByName(selectedLvl);
 
-        if (questionConfig.isPresent()) {
-            QuestionConfig config = questionConfig.get();
+        if (questionConfig.size() > 0) {
+            QuestionConfig config = questionConfig.get(0);
             result.put(1, config.getDifficulty1Amount());
             result.put(2, config.getDifficulty2Amount());
             result.put(3, config.getDifficulty3Amount());
@@ -114,11 +114,11 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
     }
 
     private Integer getAmountOfSpringSecurityQuestions(String selectedLvl) {
-        Optional<QuestionConfig> questionConfig =
+        List<QuestionConfig> questionConfig =
                 questionConfigService.loadByName(selectedLvl);
 
-        if (questionConfig.isPresent()) {
-            QuestionConfig config = questionConfig.get();
+        if (questionConfig.size() > 0) {
+            QuestionConfig config = questionConfig.get(0);
             return config.getSpringSecurityAmount();
         } else {
             throw new RuntimeException("No question config!");
