@@ -94,7 +94,7 @@ public abstract class AbstractImportExportView extends AbstractPageView {
         }
         File file = new File(pathToFileStorage + globalTmpDir + File.separator + fileName);
         try (FileOutputStream fos = new FileOutputStream(file)) {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[10240];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 fos.write(buffer, 0, bytesRead);
