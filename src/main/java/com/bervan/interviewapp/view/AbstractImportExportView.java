@@ -7,15 +7,14 @@ import com.bervan.core.model.BervanLogger;
 import com.bervan.ieentities.BaseExcelExport;
 import com.bervan.ieentities.BaseExcelImport;
 import com.bervan.ieentities.ExcelIEEntity;
-import com.bervan.interviewapp.pocketitem.CodingTask;
-import com.bervan.interviewapp.pocketitem.CodingTaskService;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
 import com.bervan.interviewapp.interviewquestions.Question;
+import com.bervan.interviewapp.pocketitem.CodingTask;
+import com.bervan.interviewapp.pocketitem.CodingTaskService;
 import com.bervan.interviewapp.questionconfig.QuestionConfig;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.server.StreamResource;
@@ -26,6 +25,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public abstract class AbstractImportExportView extends AbstractPageView {
@@ -109,7 +109,7 @@ public abstract class AbstractImportExportView extends AbstractPageView {
 
         logger.debug("Class that will be imported: " + subclasses);
         BaseExcelImport baseExcelImport = new BaseExcelImport(subclasses, logger);
-        List<? extends ExcelIEEntity> objects = (List<? extends ExcelIEEntity>) baseExcelImport.importExcel(baseExcelImport.load(file));
+        List<? extends ExcelIEEntity<UUID>> objects = (List<? extends ExcelIEEntity<UUID>>) baseExcelImport.importExcel(baseExcelImport.load(file));
         logger.debug("Extracted " + objects.size() + " entities from excel.");
         codingTaskService.saveIfValid(objects);
         oneValueService.saveIfValid(objects);

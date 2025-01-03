@@ -1,20 +1,24 @@
 package com.bervan.interviewapp.questionconfig;
 
+import com.bervan.common.search.SearchService;
 import com.bervan.common.service.AuthService;
 import com.bervan.common.service.BaseService;
 import com.bervan.ieentities.ExcelIEEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
-public class QuestionConfigService implements BaseService<UUID, QuestionConfig> {
+public class QuestionConfigService extends BaseService<UUID, QuestionConfig> {
     private final QuestionConfigRepository repository;
     private final QuestionConfigHistoryRepository historyRepository;
 
-    public QuestionConfigService(QuestionConfigRepository repository, QuestionConfigHistoryRepository historyRepository) {
+    public QuestionConfigService(QuestionConfigRepository repository, QuestionConfigHistoryRepository historyRepository, SearchService searchService) {
+        super(repository, searchService);
         this.repository = repository;
         this.historyRepository = historyRepository;
     }
@@ -42,13 +46,6 @@ public class QuestionConfigService implements BaseService<UUID, QuestionConfig> 
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<HistoryQuestionConfig> loadHistory() {
         return historyRepository.findAll();
-    }
-
-    public void saveIfValid(List<? extends ExcelIEEntity> objects) {
-        List<? extends ExcelIEEntity> list = objects.stream().filter(e -> e instanceof QuestionConfig).toList();
-        for (ExcelIEEntity excelIEEntity : list) {
-            repository.save(((QuestionConfig) excelIEEntity));
-        }
     }
 
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")

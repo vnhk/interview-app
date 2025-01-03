@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.interviewquestions;
 
+import com.bervan.common.search.SearchService;
 import com.bervan.common.service.AuthService;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BervanLogger;
@@ -10,12 +11,13 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class InterviewQuestionService implements BaseService<UUID, Question> {
+public class InterviewQuestionService extends BaseService<UUID, Question> {
     private final InterviewQuestionRepository repository;
     private final InterviewQuestionHistoryRepository historyRepository;
     private final BervanLogger logger;
 
-    public InterviewQuestionService(InterviewQuestionRepository repository, InterviewQuestionHistoryRepository historyRepository, BervanLogger logger) {
+    public InterviewQuestionService(InterviewQuestionRepository repository, InterviewQuestionHistoryRepository historyRepository, BervanLogger logger, SearchService searchService) {
+        super(repository, searchService);
         this.repository = repository;
         this.historyRepository = historyRepository;
         this.logger = logger;
@@ -46,13 +48,6 @@ public class InterviewQuestionService implements BaseService<UUID, Question> {
         return historyRepository.findAll();
     }
 
-    public void saveIfValid(List<? extends ExcelIEEntity> objects) {
-        List<? extends ExcelIEEntity> list = objects.stream().filter(e -> e instanceof Question).toList();
-        logger.debug("Filtered Interview Questions to be imported: " + list.size());
-        for (ExcelIEEntity excelIEEntity : list) {
-            repository.save(((Question) excelIEEntity));
-        }
-    }
 
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<Question> findByDifficultyNotSpringSecurity(Integer difficulty) {

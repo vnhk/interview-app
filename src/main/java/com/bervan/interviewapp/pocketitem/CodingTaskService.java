@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.pocketitem;
 
+import com.bervan.common.search.SearchService;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.ieentities.ExcelIEEntity;
@@ -12,12 +13,13 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class CodingTaskService implements BaseService<UUID, CodingTask> {
+public class CodingTaskService extends BaseService<UUID, CodingTask> {
     private final CodingTaskRepository repository;
     private final CodingTaskHistoryRepository historyRepository;
     private final BervanLogger logger;
 
-    public CodingTaskService(CodingTaskRepository repository, CodingTaskHistoryRepository historyRepository, BervanLogger logger) {
+    public CodingTaskService(CodingTaskRepository repository, SearchService searchService, CodingTaskHistoryRepository historyRepository, BervanLogger logger) {
+        super(repository, searchService);
         this.repository = repository;
         this.historyRepository = historyRepository;
         this.logger = logger;
@@ -48,11 +50,4 @@ public class CodingTaskService implements BaseService<UUID, CodingTask> {
         return historyRepository.findAll();
     }
 
-    public void saveIfValid(List<? extends ExcelIEEntity> objects) {
-        List<? extends ExcelIEEntity> list = objects.stream().filter(e -> e instanceof CodingTask).toList();
-        logger.debug("Filtered Coding Tasks to be imported: " + list.size());
-        for (ExcelIEEntity excelIEEntity : list) {
-            repository.save(((CodingTask) excelIEEntity));
-        }
-    }
 }
