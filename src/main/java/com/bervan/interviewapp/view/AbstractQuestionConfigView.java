@@ -178,8 +178,9 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<UUID,
             newQuestionConfig.setDifficulty4Amount(a4);
             newQuestionConfig.setDifficulty5Amount(a5);
             newQuestionConfig.setSpringSecurityAmount(s);
-            service.save(newQuestionConfig);
-            super.refreshDataAfterUpdate();
+            data.add(newQuestionConfig);
+            grid.setItems(data); // Refresh the grid
+            service.save(data.stream().toList());
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, difficulty1Amount, difficulty2Amount, difficulty3Amount, difficulty4Amount, difficulty5Amount, saveButton);

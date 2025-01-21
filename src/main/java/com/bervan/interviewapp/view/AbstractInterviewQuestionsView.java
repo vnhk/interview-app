@@ -123,8 +123,9 @@ public abstract class AbstractInterviewQuestionsView extends AbstractTableView<U
             double maxPoints = Double.parseDouble(maxPointsField.getValue());
 
             Question newQuestion = new Question(name, tags, difficulty, questionDetails, answerDetails, maxPoints);
-            service.save(newQuestion);
-            super.refreshDataAfterUpdate();
+            data.add(newQuestion);
+            grid.setItems(data); // Refresh the grid
+            service.save(data.stream().toList());
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, tagsComboBox, difficultyComboBox, questionDetailsField, answerDetailsField, maxPointsField, saveButton);
