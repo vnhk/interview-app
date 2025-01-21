@@ -72,8 +72,8 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<UUID, Cod
                 case "questions" -> item.setQuestions(field.getValue());
             }
 
+            service.save(item);
             grid.getDataProvider().refreshItem(item);
-            service.save(data.stream().toList());
             dialog.close();
         });
 
@@ -106,9 +106,8 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<UUID, Cod
             String questions = questionsField.getValue();
 
             CodingTask newCodingTask = new CodingTask(name, initialCode, exampleCode, exampleCodeDetails, questions, LocalDateTime.now());
-            data.add(newCodingTask);
-            grid.setItems(data); // Refresh the grid
-            service.save(data.stream().toList());
+            service.save(newCodingTask);
+            super.refreshDataAfterUpdate();
             dialog.close();
         });
         dialogLayout.add(headerLayout, nameField, initialCodeField, exampleCodeField, exampleCodeDetailsField, questionsField, saveButton);

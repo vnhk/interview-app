@@ -20,6 +20,7 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.server.StreamResource;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -140,8 +141,8 @@ public abstract class AbstractImportExportView extends AbstractPageView {
 
     private List<ExcelIEEntity<?>> getDataToExport() {
         List<ExcelIEEntity<?>> result = new ArrayList<>();
-        result.addAll(codingTaskService.load());
-        result.addAll(interviewQuestionService.load());
+        result.addAll(codingTaskService.load(Pageable.ofSize(1000000)));
+        result.addAll(interviewQuestionService.load(Pageable.ofSize(1000000)));
         result.addAll(oneValueService.load());
         return result;
     }

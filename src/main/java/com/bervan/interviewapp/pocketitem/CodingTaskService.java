@@ -35,12 +35,6 @@ public class CodingTaskService extends BaseService<UUID, CodingTask> {
     }
 
     @Override
-    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
-    public Set<CodingTask> load() {
-        return new HashSet<>(repository.findAll());
-    }
-
-    @Override
     public void delete(CodingTask item) {
         repository.delete(item);
     }

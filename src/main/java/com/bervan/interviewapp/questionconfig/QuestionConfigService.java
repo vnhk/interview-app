@@ -33,12 +33,6 @@ public class QuestionConfigService extends BaseService<UUID, QuestionConfig> {
     }
 
     @Override
-    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
-    public Set<QuestionConfig> load() {
-        return new HashSet<>(repository.findAll());
-    }
-
-    @Override
     public void delete(QuestionConfig item) {
         repository.delete(item);
     }

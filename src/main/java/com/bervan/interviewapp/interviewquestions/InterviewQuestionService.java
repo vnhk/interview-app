@@ -33,12 +33,6 @@ public class InterviewQuestionService extends BaseService<UUID, Question> {
     }
 
     @Override
-    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
-    public Set<Question> load() {
-        return new HashSet<>(repository.findAll());
-    }
-
-    @Override
     public void delete(Question item) {
         repository.delete(item);
     }
