@@ -2,16 +2,12 @@ package com.bervan.interviewapp.interviewquestions;
 
 import com.bervan.common.model.BervanHistoryEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.user.User;
-import com.bervan.history.model.AbstractBaseHistoryEntity;
 import com.bervan.history.model.HistoryField;
 import com.bervan.history.model.HistoryOwnerEntity;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -22,7 +18,6 @@ import java.util.UUID;
 public class HistoryQuestion extends BervanHistoryEntity<UUID> implements  PersistableTableData<UUID>,
         ExcelIEEntity<UUID> {
     @Id
-    @GeneratedValue
     private UUID id;
 
     @HistoryField

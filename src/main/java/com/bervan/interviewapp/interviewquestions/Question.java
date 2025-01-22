@@ -9,6 +9,7 @@ import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -20,7 +21,6 @@ import java.util.UUID;
 @HistorySupported
 public class Question extends BervanBaseEntity<UUID> implements PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     @Id
-    @GeneratedValue
     private UUID id;
     @VaadinTableColumn(displayName = "Name", internalName = "name")
     private String name;

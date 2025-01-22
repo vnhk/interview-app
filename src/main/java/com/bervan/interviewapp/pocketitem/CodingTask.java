@@ -6,6 +6,8 @@ import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,6 +17,9 @@ import java.util.UUID;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
 public class CodingTask extends BervanBaseEntity<UUID> implements  PersistableTableData<UUID>, ExcelIEEntity<UUID> {
+    @Id
+    private UUID id;
+
     private String name;
     @Lob
     private String initialCode;
@@ -25,11 +30,6 @@ public class CodingTask extends BervanBaseEntity<UUID> implements  PersistableTa
     @Lob
     private String questions;
     private LocalDateTime modificationDate;
-    @Id
-    @GeneratedValue
-    private UUID id;
-
-
 
     @OneToMany(fetch = FetchType.EAGER)
     @HistoryCollection(historyClass = HistoryCodingTask.class)
