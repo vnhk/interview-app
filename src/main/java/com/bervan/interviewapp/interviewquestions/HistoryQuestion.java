@@ -7,7 +7,6 @@ import com.bervan.history.model.HistoryOwnerEntity;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
-public class HistoryQuestion extends BervanHistoryEntity<UUID> implements  PersistableTableData<UUID>,
+public class HistoryQuestion extends BervanHistoryEntity<UUID> implements PersistableTableData<UUID>,
         ExcelIEEntity<UUID> {
     @Id
     private UUID id;
