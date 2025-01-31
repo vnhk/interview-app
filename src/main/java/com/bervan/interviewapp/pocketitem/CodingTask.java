@@ -30,6 +30,7 @@ public class CodingTask extends BervanBaseEntity<UUID> implements  PersistableTa
     @Lob
     private String questions;
     private LocalDateTime modificationDate;
+    private boolean deleted;
 
     @OneToMany(fetch = FetchType.EAGER)
     @HistoryCollection(historyClass = HistoryCodingTask.class)
@@ -46,6 +47,15 @@ public class CodingTask extends BervanBaseEntity<UUID> implements  PersistableTa
 
     public CodingTask() {
 
+    }
+
+    @Override
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 
     public String getTableFilterableColumnValue() {

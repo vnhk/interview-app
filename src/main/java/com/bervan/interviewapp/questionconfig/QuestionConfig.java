@@ -6,7 +6,6 @@ import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -28,6 +27,7 @@ public class QuestionConfig extends BervanBaseEntity<UUID> implements Persistabl
     private Integer difficulty5Amount;
     private Integer springSecurityAmount;
     private LocalDateTime modificationDate;
+    private boolean deleted;
     @Id
     private UUID id;
 
@@ -35,7 +35,14 @@ public class QuestionConfig extends BervanBaseEntity<UUID> implements Persistabl
     @HistoryCollection(historyClass = HistoryQuestionConfig.class)
     private Set<HistoryQuestionConfig> history = new HashSet<>();
 
+    @Override
+    public Boolean isDeleted() {
+        return deleted;
+    }
 
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
 
     public QuestionConfig() {
 

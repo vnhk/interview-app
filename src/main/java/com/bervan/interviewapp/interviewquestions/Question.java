@@ -9,7 +9,6 @@ import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -44,7 +43,7 @@ public class Question extends BervanBaseEntity<UUID> implements PersistableTable
     @HistoryCollection(historyClass = HistoryQuestion.class)
     private Set<HistoryQuestion> history = new HashSet<>();
 
-
+    private boolean deleted;
 
     public Question(String name, String tags, int difficulty, String questionDetails, String answerDetails, double maxPoints) {
         this.name = name;
@@ -131,5 +130,14 @@ public class Question extends BervanBaseEntity<UUID> implements PersistableTable
 
     public void setHistory(Set<HistoryQuestion> history) {
         this.history = history;
+    }
+
+    @Override
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 }
