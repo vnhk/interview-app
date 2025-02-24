@@ -1,4 +1,4 @@
-package com.bervan.interviewapp.pocketitem;
+package com.bervan.interviewapp.codingtask;
 
 import com.bervan.history.model.BaseRepository;
 

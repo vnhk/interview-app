@@ -2,8 +2,8 @@ package com.bervan.interviewapp.view;
 
 import com.bervan.common.AbstractTableView;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.interviewapp.pocketitem.CodingTask;
-import com.bervan.interviewapp.pocketitem.CodingTaskService;
+import com.bervan.interviewapp.codingtask.CodingTask;
+import com.bervan.interviewapp.codingtask.CodingTaskService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;

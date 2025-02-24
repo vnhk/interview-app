@@ -1,15 +1,12 @@
-package com.bervan.interviewapp.pocketitem;
+package com.bervan.interviewapp.codingtask;
 
 import com.bervan.common.search.SearchService;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.ieentities.ExcelIEEntity;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
