@@ -2,7 +2,7 @@ package com.bervan.interviewapp.interviewquestions;
 
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinTableColumn;
+import com.bervan.common.model.VaadinBervanColumn;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
@@ -21,21 +21,21 @@ import java.util.UUID;
 public class Question extends BervanBaseEntity<UUID> implements PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     @Id
     private UUID id;
-    @VaadinTableColumn(displayName = "Name", internalName = "name")
+    @VaadinBervanColumn(displayName = "Name", internalName = "name")
     private String name;
-    @VaadinTableColumn(displayName = "Tags", internalName = "tags", strValues = {"Java/DB/Testing", "Security", "Frameworks"})
+    @VaadinBervanColumn(displayName = "Tags", internalName = "tags", strValues = {"Java/DB/Testing", "Security", "Frameworks"})
     private String tags;
     @Min(1)
     @Max(5)
-    @VaadinTableColumn(displayName = "Difficulty", internalName = "difficulty", intValues = {1, 2, 3, 4, 5})
+    @VaadinBervanColumn(displayName = "Difficulty", internalName = "difficulty", intValues = {1, 2, 3, 4, 5})
     private Integer difficulty;
     @Lob
-    @VaadinTableColumn(displayName = "Question Details", internalName = "questionDetails")
+    @VaadinBervanColumn(displayName = "Question Details", internalName = "questionDetails")
     private String questionDetails;
     @Lob
-    @VaadinTableColumn(displayName = "Answer Details", internalName = "answerDetails")
+    @VaadinBervanColumn(displayName = "Answer Details", internalName = "answerDetails")
     private String answerDetails;
-    @VaadinTableColumn(displayName = "Max Points", internalName = "maxPoints")
+    @VaadinBervanColumn(displayName = "Max Points", internalName = "maxPoints")
     private Double maxPoints;
     private LocalDateTime modificationDate;
 

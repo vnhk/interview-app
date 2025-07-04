@@ -1,6 +1,6 @@
 package com.bervan.interviewapp.view;
 
-import com.bervan.common.AbstractTableView;
+import com.bervan.common.AbstractBervanTableView;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
 import com.bervan.interviewapp.interviewquestions.Question;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-public abstract class AbstractInterviewQuestionsView extends AbstractTableView<UUID, Question> {
+public abstract class AbstractInterviewQuestionsView extends AbstractBervanTableView<UUID, Question> {
     public static final String ROUTE_NAME = "interview-app/interview-questions";
 
 

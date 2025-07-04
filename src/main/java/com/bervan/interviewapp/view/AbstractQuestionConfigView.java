@@ -1,6 +1,6 @@
 package com.bervan.interviewapp.view;
 
-import com.bervan.common.AbstractTableView;
+import com.bervan.common.AbstractBervanTableView;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.interviewapp.questionconfig.QuestionConfig;
 import com.bervan.interviewapp.questionconfig.QuestionConfigService;
@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
 
-public abstract class AbstractQuestionConfigView extends AbstractTableView<UUID, QuestionConfig> {
+public abstract class AbstractQuestionConfigView extends AbstractBervanTableView<UUID, QuestionConfig> {
     public static final String ROUTE_NAME = "interview-app/question-config";
 
 
@@ -49,10 +49,10 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<UUID,
     }
 
     @Override
-    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedColumn, QuestionConfig item) {
+    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedField, QuestionConfig item) {
         TextFieldBase field;
 
-        switch (clickedColumn) {
+        switch (clickedField) {
             case "name" -> {
                 field = new IntegerField("Name");
                 field.setWidth("100%");
@@ -108,7 +108,7 @@ public abstract class AbstractQuestionConfigView extends AbstractTableView<UUID,
 
         saveButton.addClickListener(e -> {
 
-            switch (clickedColumn) {
+            switch (clickedField) {
                 case "name" -> item.setName((String) field.getValue());
                 case "difficulty1Amount" -> item.setDifficulty1Amount((Integer) field.getValue());
                 case "difficulty2Amount" -> item.setDifficulty2Amount((Integer) field.getValue());

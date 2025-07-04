@@ -1,6 +1,6 @@
 package com.bervan.interviewapp.view;
 
-import com.bervan.common.AbstractTableView;
+import com.bervan.common.AbstractBervanTableView;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.interviewapp.codingtask.CodingTask;
 import com.bervan.interviewapp.codingtask.CodingTaskService;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component
-public abstract class AbstractCodingTaskView extends AbstractTableView<UUID, CodingTask> {
+public abstract class AbstractCodingTaskView extends AbstractBervanTableView<UUID, CodingTask> {
     public static final String ROUTE_NAME = "interview-app/coding-tasks";
 
 
@@ -48,11 +48,11 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<UUID, Cod
     }
 
     @Override
-    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedColumn, CodingTask item) {
-        TextArea field = new TextArea(clickedColumn);
+    protected void buildOnColumnClickDialogContent(Dialog dialog, VerticalLayout dialogLayout, HorizontalLayout headerLayout, String clickedField, CodingTask item) {
+        TextArea field = new TextArea(clickedField);
         field.setWidth("100%");
 
-        switch (clickedColumn) {
+        switch (clickedField) {
             case "name" -> field.setValue(item.getTableFilterableColumnValue());
             case "initialCode" -> field.setValue(item.getInitialCode());
             case "exampleCode" -> field.setValue(item.getExampleCode());
@@ -64,7 +64,7 @@ public abstract class AbstractCodingTaskView extends AbstractTableView<UUID, Cod
         saveButton.addClassName("option-button");
 
         saveButton.addClickListener(e -> {
-            switch (clickedColumn) {
+            switch (clickedField) {
                 case "name" -> item.setName(field.getValue());
                 case "initialCode" -> item.setInitialCode(field.getValue());
                 case "exampleCode" -> item.setExampleCode(field.getValue());
