@@ -1,6 +1,6 @@
 package com.bervan.interviewapp.view;
 
-import com.bervan.common.AbstractPageView;
+import com.bervan.common.view.AbstractPageView;
 
 public abstract class AbstractInterviewHomeView extends AbstractPageView {
 

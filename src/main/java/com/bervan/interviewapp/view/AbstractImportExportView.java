@@ -1,6 +1,6 @@
 package com.bervan.interviewapp.view;
 
-import com.bervan.common.AbstractPageView;
+import com.bervan.common.view.AbstractPageView;
 import com.bervan.common.model.PersistableTableData;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BervanLogger;
