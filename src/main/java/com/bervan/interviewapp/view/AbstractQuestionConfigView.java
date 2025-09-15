@@ -15,6 +15,7 @@ import com.vaadin.flow.component.textfield.TextFieldBase;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 public abstract class AbstractQuestionConfigView extends AbstractBervanTableView<UUID, QuestionConfig> {
