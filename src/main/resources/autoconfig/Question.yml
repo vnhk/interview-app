@@ -1,0 +1,58 @@
+columns:
+  - field: name
+    displayName: "Name"
+    internalName: "name"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 3
+    max: 255
+
+  - field: tags
+    displayName: "Tags"
+    internalName: "tags"
+    strValues: ["Java/DB/Testing", "Security", "Frameworks"]
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+
+  - field: difficulty
+    displayName: "Difficulty"
+    internalName: "difficulty"
+    intValues: [1, 2, 3, 4, 5]
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+
+  - field: questionDetails
+    displayName: "Question Details"
+    internalName: "questionDetails"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 4096
+
+  - field: answerDetails
+    displayName: "Answer Details"
+    internalName: "answerDetails"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 4096
+
+  - field: maxPoints
+    displayName: "Max Points"
+    internalName: "maxPoints"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 0
+    max: 100
