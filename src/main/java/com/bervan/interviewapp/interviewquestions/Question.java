@@ -2,7 +2,6 @@ package com.bervan.interviewapp.interviewquestions;
 
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinBervanColumn;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
@@ -21,21 +20,15 @@ import java.util.UUID;
 public class Question extends BervanBaseEntity<UUID> implements PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     @Id
     private UUID id;
-    @VaadinBervanColumn(displayName = "Name", internalName = "name")
     private String name;
-    @VaadinBervanColumn(displayName = "Tags", internalName = "tags", strValues = {"Java/DB/Testing", "Security", "Frameworks"})
     private String tags;
     @Min(1)
     @Max(5)
-    @VaadinBervanColumn(displayName = "Difficulty", internalName = "difficulty", intValues = {1, 2, 3, 4, 5})
     private Integer difficulty;
     @Lob
-    @VaadinBervanColumn(displayName = "Question Details", internalName = "questionDetails")
     private String questionDetails;
     @Lob
-    @VaadinBervanColumn(displayName = "Answer Details", internalName = "answerDetails")
     private String answerDetails;
-    @VaadinBervanColumn(displayName = "Max Points", internalName = "maxPoints")
     private Double maxPoints;
     private LocalDateTime modificationDate;
 
@@ -106,12 +99,12 @@ public class Question extends BervanBaseEntity<UUID> implements PersistableTable
         this.maxPoints = maxPoints;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public UUID getId() {
         return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.bervan.interviewapp.view;
 
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
@@ -16,7 +17,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.UUID;
 
 @Component
@@ -24,8 +24,8 @@ public abstract class AbstractInterviewQuestionsView extends AbstractBervanTable
     public static final String ROUTE_NAME = "interview-app/interview-questions";
 
 
-    public AbstractInterviewQuestionsView(@Autowired InterviewQuestionService questionService, BervanLogger log) {
-        super(new InterviewAppPageLayout(ROUTE_NAME), questionService, log, Question.class);
+    public AbstractInterviewQuestionsView(@Autowired InterviewQuestionService questionService, BervanLogger log, BervanViewConfig bervanViewConfig) {
+        super(new InterviewAppPageLayout(ROUTE_NAME), questionService, log, bervanViewConfig, Question.class);
         renderCommonComponents();
     }
 
