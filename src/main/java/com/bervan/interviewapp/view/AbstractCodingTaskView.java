@@ -2,7 +2,6 @@ package com.bervan.interviewapp.view;
 
 import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.view.AbstractBervanTableView;
-import com.bervan.core.model.BervanLogger;
 import com.bervan.interviewapp.codingtask.CodingTask;
 import com.bervan.interviewapp.codingtask.CodingTaskService;
 import com.vaadin.flow.component.button.Button;
@@ -24,8 +23,8 @@ public abstract class AbstractCodingTaskView extends AbstractBervanTableView<UUI
     public static final String ROUTE_NAME = "interview-app/coding-tasks";
 
 
-    public AbstractCodingTaskView(@Autowired CodingTaskService service, BervanLogger log, BervanViewConfig bervanViewConfig) {
-        super(new InterviewAppPageLayout(ROUTE_NAME), service, log, bervanViewConfig, CodingTask.class);
+    public AbstractCodingTaskView(@Autowired CodingTaskService service, BervanViewConfig bervanViewConfig) {
+        super(new InterviewAppPageLayout(ROUTE_NAME), service, bervanViewConfig, CodingTask.class);
         renderCommonComponents();
     }
 

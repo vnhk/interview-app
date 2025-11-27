@@ -2,7 +2,6 @@ package com.bervan.interviewapp.view;
 
 import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.view.AbstractBervanTableView;
-import com.bervan.core.model.BervanLogger;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
 import com.bervan.interviewapp.interviewquestions.Question;
 import com.bervan.interviewapp.interviewquestions.QuestionTag;
@@ -24,8 +23,8 @@ public abstract class AbstractInterviewQuestionsView extends AbstractBervanTable
     public static final String ROUTE_NAME = "interview-app/interview-questions";
 
 
-    public AbstractInterviewQuestionsView(@Autowired InterviewQuestionService questionService, BervanLogger log, BervanViewConfig bervanViewConfig) {
-        super(new InterviewAppPageLayout(ROUTE_NAME), questionService, log, bervanViewConfig, Question.class);
+    public AbstractInterviewQuestionsView(@Autowired InterviewQuestionService questionService, BervanViewConfig bervanViewConfig) {
+        super(new InterviewAppPageLayout(ROUTE_NAME), questionService, bervanViewConfig, Question.class);
         renderCommonComponents();
     }
 

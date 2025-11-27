@@ -2,7 +2,6 @@ package com.bervan.interviewapp.codingtask;
 
 import com.bervan.common.search.SearchService;
 import com.bervan.common.service.BaseService;
-import com.bervan.core.model.BervanLogger;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +12,11 @@ import java.util.UUID;
 public class CodingTaskService extends BaseService<UUID, CodingTask> {
     private final CodingTaskRepository repository;
     private final CodingTaskHistoryRepository historyRepository;
-    private final BervanLogger logger;
 
-    public CodingTaskService(CodingTaskRepository repository, SearchService searchService, CodingTaskHistoryRepository historyRepository, BervanLogger logger) {
+    public CodingTaskService(CodingTaskRepository repository, SearchService searchService, CodingTaskHistoryRepository historyRepository) {
         super(repository, searchService);
         this.repository = repository;
         this.historyRepository = historyRepository;
-        this.logger = logger;
     }
 
     @Override
