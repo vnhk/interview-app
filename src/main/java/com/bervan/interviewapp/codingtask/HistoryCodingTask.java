@@ -1,13 +1,12 @@
 package com.bervan.interviewapp.codingtask;
 
-import com.bervan.common.model.BervanHistoryEntity;
-import com.bervan.common.model.PersistableTableData;
+import com.bervan.common.model.BervanHistoryOwnedEntity;
+import com.bervan.common.model.PersistableTableOwnedData;
 import com.bervan.history.model.HistoryField;
 import com.bervan.history.model.HistoryOwnerEntity;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
-public class HistoryCodingTask extends BervanHistoryEntity<UUID> implements  PersistableTableData<UUID>, ExcelIEEntity<UUID> {
+public class HistoryCodingTask extends BervanHistoryOwnedEntity<UUID> implements PersistableTableOwnedData<UUID>, ExcelIEEntity<UUID> {
     @HistoryField
     private String name;
     @HistoryField
