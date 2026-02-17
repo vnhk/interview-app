@@ -61,6 +61,10 @@ public class CodingTask extends BervanOwnedBaseEntity<UUID> implements Persistab
         return name;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
         this.name = name;
     }

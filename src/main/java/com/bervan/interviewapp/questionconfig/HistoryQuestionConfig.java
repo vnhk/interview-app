@@ -45,6 +45,10 @@ public class HistoryQuestionConfig extends BervanHistoryOwnedEntity<UUID> implem
         return name;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
         this.name = name;
     }

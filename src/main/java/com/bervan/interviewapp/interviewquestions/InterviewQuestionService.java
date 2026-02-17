@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class InterviewQuestionService extends BaseService<UUID, Question> {
@@ -39,9 +40,23 @@ public class InterviewQuestionService extends BaseService<UUID, Question> {
         return historyRepository.findAll();
     }
 
-
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<Question> findByDifficultyNotSpringSecurity(Integer difficulty) {
-        return repository.findAllByDifficultyAndTagsInAndOwnersId(difficulty, Arrays.asList("Java/DB/Testing", "Frameworks"), AuthService.getLoggedUserId());
+        return repository.findAllByDifficultyAndOwnersId(difficulty, AuthService.getLoggedUserId())
+                .stream()
+                .filter(q -> !isSecurityQuestion(q))
+                .collect(Collectors.toList());
+    }
+
+    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
+    public List<Question> findByDifficultySpringSecurity() {
+        return repository.findAllByOwnersId(AuthService.getLoggedUserId())
+                .stream()
+                .filter(this::isSecurityQuestion)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isSecurityQuestion(Question q) {
+        return q.getTags() != null && q.getTags().toLowerCase().contains("security");
     }
 }
