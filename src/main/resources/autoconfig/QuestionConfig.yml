@@ -1,0 +1,60 @@
+columns:
+  - field: name
+    displayName: "Name"
+    internalName: "name"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 1
+    max: 255
+
+  - field: difficulty1Percent
+    displayName: "Level 1 %"
+    internalName: "difficulty1Percent"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100
+
+  - field: difficulty2Percent
+    displayName: "Level 2 %"
+    internalName: "difficulty2Percent"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100
+
+  - field: difficulty3Percent
+    displayName: "Level 3 %"
+    internalName: "difficulty3Percent"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100
+
+  - field: difficulty4Percent
+    displayName: "Level 4 %"
+    internalName: "difficulty4Percent"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100
+
+  - field: difficulty5Percent
+    displayName: "Level 5 %"
+    internalName: "difficulty5Percent"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100
