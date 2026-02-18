@@ -20,12 +20,11 @@ import java.util.UUID;
 )
 public class QuestionConfig extends BervanOwnedBaseEntity<UUID> implements PersistableTableOwnedData<UUID>, ExcelIEEntity<UUID> {
     private String name;
-    private Integer difficulty1Amount;
-    private Integer difficulty2Amount;
-    private Integer difficulty3Amount;
-    private Integer difficulty4Amount;
-    private Integer difficulty5Amount;
-    private Integer springSecurityAmount;
+    private Integer difficulty1Percent;
+    private Integer difficulty2Percent;
+    private Integer difficulty3Percent;
+    private Integer difficulty4Percent;
+    private Integer difficulty5Percent;
     private LocalDateTime modificationDate;
     private boolean deleted;
     @Id
@@ -86,52 +85,43 @@ public class QuestionConfig extends BervanOwnedBaseEntity<UUID> implements Persi
         this.history = history;
     }
 
-
-    public Integer getDifficulty1Amount() {
-        return difficulty1Amount;
+    public Integer getDifficulty1Percent() {
+        return difficulty1Percent;
     }
 
-    public void setDifficulty1Amount(Integer difficulty1Amount) {
-        this.difficulty1Amount = difficulty1Amount;
+    public void setDifficulty1Percent(Integer difficulty1Percent) {
+        this.difficulty1Percent = difficulty1Percent;
     }
 
-    public Integer getDifficulty2Amount() {
-        return difficulty2Amount;
+    public Integer getDifficulty2Percent() {
+        return difficulty2Percent;
     }
 
-    public void setDifficulty2Amount(Integer difficulty2Amount) {
-        this.difficulty2Amount = difficulty2Amount;
+    public void setDifficulty2Percent(Integer difficulty2Percent) {
+        this.difficulty2Percent = difficulty2Percent;
     }
 
-    public Integer getDifficulty3Amount() {
-        return difficulty3Amount;
+    public Integer getDifficulty3Percent() {
+        return difficulty3Percent;
     }
 
-    public void setDifficulty3Amount(Integer difficulty3Amount) {
-        this.difficulty3Amount = difficulty3Amount;
+    public void setDifficulty3Percent(Integer difficulty3Percent) {
+        this.difficulty3Percent = difficulty3Percent;
     }
 
-    public Integer getDifficulty4Amount() {
-        return difficulty4Amount;
+    public Integer getDifficulty4Percent() {
+        return difficulty4Percent;
     }
 
-    public void setDifficulty4Amount(Integer difficulty4Amount) {
-        this.difficulty4Amount = difficulty4Amount;
+    public void setDifficulty4Percent(Integer difficulty4Percent) {
+        this.difficulty4Percent = difficulty4Percent;
     }
 
-    public Integer getDifficulty5Amount() {
-        return difficulty5Amount;
+    public Integer getDifficulty5Percent() {
+        return difficulty5Percent;
     }
 
-    public void setDifficulty5Amount(Integer difficulty5Amount) {
-        this.difficulty5Amount = difficulty5Amount;
-    }
-
-    public Integer getSpringSecurityAmount() {
-        return springSecurityAmount;
-    }
-
-    public void setSpringSecurityAmount(Integer springSecurityAmount) {
-        this.springSecurityAmount = springSecurityAmount;
+    public void setDifficulty5Percent(Integer difficulty5Percent) {
+        this.difficulty5Percent = difficulty5Percent;
     }
 }

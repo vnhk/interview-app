@@ -5,160 +5,331 @@ import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
 import com.bervan.interviewapp.interviewquestions.Question;
 import com.bervan.interviewapp.questionconfig.QuestionConfig;
 import com.bervan.interviewapp.questionconfig.QuestionConfigService;
+import com.bervan.interviewapp.session.InterviewSession;
+import com.bervan.interviewapp.session.InterviewSessionQuestion;
+import com.bervan.interviewapp.session.InterviewSessionService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public abstract class AbstractStartInterviewView extends AbstractPageView {
     public static final String ROUTE_NAME = "interview-app/interview-process";
-    public static final String L0 = "0-1";
-    public static final String L1 = "1-2";
-    public static final String L2 = "2-3";
-    public static final String L3 = "3-4";
-    public static final String L4 = "4-5";
-    public static final String L5 = "5-6";
-    public static final String L6 = "6+";
-    public static String[] experienceOptions = {L0, L1, L2, L3, L4, L5, L6};
     private final InterviewAppPageLayout pageLayout;
+
     @Autowired
     private QuestionConfigService questionConfigService;
     @Autowired
     private InterviewQuestionService questionService;
+    @Autowired
+    private InterviewSessionService sessionService;
+
+    private final List<Question> selectedQuestions = new ArrayList<>();
+    private VerticalLayout reviewListLayout;
+    private Div warningsDiv;
+    private Button startSessionButton;
 
     public AbstractStartInterviewView() {
         pageLayout = new InterviewAppPageLayout(ROUTE_NAME);
         add(pageLayout);
+    }
 
-        ComboBox<String> comboBox = new ComboBox<>("Select candidate experience (years)");
-        comboBox.setItems(experienceOptions);
-        comboBox.setWidth("300px");
+    @Override
+    protected void onAttach(com.vaadin.flow.component.AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        buildContent();
+    }
 
-        Button generateButton = new Button("Generate Interview", new Icon(VaadinIcon.PLAY));
+    private void buildContent() {
+        // Remove old content (keep pageLayout)
+        getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
+
+        // --- Controls ---
+        ComboBox<QuestionConfig> configCombo = new ComboBox<>("Interview Config");
+        List<QuestionConfig> configs = questionConfigService.load(PageRequest.of(0, 10000)).stream()
+                .map(e -> (QuestionConfig) e)
+                .collect(Collectors.toList());
+        configCombo.setItems(configs);
+        configCombo.setItemLabelGenerator(QuestionConfig::getName);
+        configCombo.setWidth("250px");
+
+        TextField candidateNameField = new TextField("Candidate Name");
+        candidateNameField.setWidth("250px");
+
+        IntegerField totalQuestionsField = new IntegerField("Total Questions");
+        totalQuestionsField.setMin(1);
+        totalQuestionsField.setMax(200);
+        totalQuestionsField.setValue(20);
+        totalQuestionsField.setWidth("150px");
+
+        Set<String> allTags = questionService.getAllDistinctTags();
+
+        MultiSelectComboBox<String> mainTagsCombo = new MultiSelectComboBox<>("Main Tags (1-3)");
+        mainTagsCombo.setItems(allTags);
+        mainTagsCombo.setWidth("300px");
+
+        MultiSelectComboBox<String> secondaryTagsCombo = new MultiSelectComboBox<>("Secondary Tags (1-5)");
+        secondaryTagsCombo.setItems(allTags);
+        secondaryTagsCombo.setWidth("300px");
+
+        Button generateButton = new Button("Generate Questions", new Icon(VaadinIcon.MAGIC));
         generateButton.addClassName("option-button");
 
-        HorizontalLayout controlsRow = new HorizontalLayout(comboBox, generateButton);
-        controlsRow.setAlignItems(FlexComponent.Alignment.END);
+        HorizontalLayout row1 = new HorizontalLayout(configCombo, candidateNameField, totalQuestionsField);
+        row1.setAlignItems(FlexComponent.Alignment.END);
 
-        VerticalLayout interviewContent = new VerticalLayout();
-        interviewContent.setWidthFull();
-        interviewContent.setPadding(false);
-        interviewContent.setVisible(false);
+        HorizontalLayout row2 = new HorizontalLayout(mainTagsCombo, secondaryTagsCombo, generateButton);
+        row2.setAlignItems(FlexComponent.Alignment.END);
+
+        // --- Warnings ---
+        warningsDiv = new Div();
+        warningsDiv.setWidthFull();
+        warningsDiv.setVisible(false);
+
+        // --- Review List ---
+        reviewListLayout = new VerticalLayout();
+        reviewListLayout.setWidthFull();
+        reviewListLayout.setPadding(false);
+        reviewListLayout.setVisible(false);
+
+        // --- Start Session Button ---
+        startSessionButton = new Button("Start Interview Session", new Icon(VaadinIcon.PLAY));
+        startSessionButton.addClassName("option-button");
+        startSessionButton.setVisible(false);
 
         generateButton.addClickListener(event -> {
-            String selectedValue = comboBox.getValue();
-            if (selectedValue == null) {
-                showWarningNotification("Please select a value from the dropdown.");
+            QuestionConfig config = configCombo.getValue();
+            if (config == null) {
+                showWarningNotification("Please select an interview config.");
+                return;
+            }
+            Set<String> mainTags = mainTagsCombo.getValue();
+            Set<String> secondaryTags = secondaryTagsCombo.getValue();
+
+            if (mainTags.isEmpty()) {
+                showWarningNotification("Please select at least 1 main tag.");
+                return;
+            }
+            if (mainTags.size() > 3) {
+                showWarningNotification("Select at most 3 main tags.");
+                return;
+            }
+            if (secondaryTags.size() > 5) {
+                showWarningNotification("Select at most 5 secondary tags.");
                 return;
             }
 
-            int selectedOptionNumber = 0;
-            for (String experienceOption : experienceOptions) {
-                if (experienceOption.equals(selectedValue)) {
-                    break;
-                } else {
-                    selectedOptionNumber++;
-                }
-            }
+            int totalQuestions = totalQuestionsField.getValue() != null ? totalQuestionsField.getValue() : 20;
 
-            interviewContent.setVisible(true);
-            interviewContent.removeAll();
-
-            String configName = "L" + selectedOptionNumber;
-            Map<Integer, Integer> amountOfLvlBasedQuestions = getAmountOfLvlBasedQuestions(configName, selectedOptionNumber);
-            Integer amountOfSpringQuestions = getAmountOfSpringSecurityQuestions(configName, selectedOptionNumber);
-
-            H3 header = new H3("Interview Plan — Experience: " + selectedValue + " years");
-            interviewContent.add(header);
-
-            int questionNumber = 1;
-            Random random = new Random();
-
-            // Questions grouped by difficulty
-            for (Map.Entry<Integer, Integer> entry : new TreeMap<>(amountOfLvlBasedQuestions).entrySet()) {
-                int difficulty = entry.getKey();
-                int amount = entry.getValue();
-                if (amount <= 0) continue;
-
-                List<Question> pool = questionService.findByDifficultyNotSpringSecurity(difficulty);
-                if (pool.isEmpty()) continue;
-
-                List<Question> selected = pickRandom(pool, amount, random);
-
-                H4 sectionTitle = new H4("Difficulty " + difficulty + " (" + getDifficultyLabel(difficulty) + ")");
-                sectionTitle.getStyle()
-                        .set("margin-top", "16px")
-                        .set("margin-bottom", "4px")
-                        .set("color", getDifficultyColor(difficulty));
-                interviewContent.add(sectionTitle);
-
-                for (Question q : selected) {
-                    interviewContent.add(buildQuestionCard(questionNumber++, q));
-                }
-            }
-
-            // Spring Security questions
-            if (amountOfSpringQuestions != null && amountOfSpringQuestions > 0) {
-                List<Question> securityPool = questionService.findByDifficultySpringSecurity();
-                if (!securityPool.isEmpty()) {
-                    H4 secTitle = new H4("Spring Security");
-                    secTitle.getStyle()
-                            .set("margin-top", "16px")
-                            .set("margin-bottom", "4px")
-                            .set("color", "#a855f7");
-                    interviewContent.add(secTitle);
-
-                    List<Question> selected = pickRandom(securityPool, amountOfSpringQuestions, random);
-                    for (Question q : selected) {
-                        interviewContent.add(buildQuestionCard(questionNumber++, q));
-                    }
-                }
-            }
-
-            // Summary
-            Div summary = new Div();
-            summary.getStyle()
-                    .set("margin-top", "24px")
-                    .set("padding", "12px 16px")
-                    .set("border-radius", "8px")
-                    .set("background", "rgba(99, 102, 241, 0.1)");
-            summary.add(new Span("Total questions: " + (questionNumber - 1)));
-            interviewContent.add(summary);
+            generateQuestionList(config, new ArrayList<>(mainTags), new ArrayList<>(secondaryTags), totalQuestions);
+            renderReviewList();
         });
 
-        add(controlsRow, interviewContent);
+        startSessionButton.addClickListener(event -> {
+            if (selectedQuestions.isEmpty()) {
+                showWarningNotification("No questions selected.");
+                return;
+            }
+
+            String candidateName = candidateNameField.getValue();
+            if (candidateName == null || candidateName.isBlank()) {
+                candidateName = "Unknown";
+            }
+
+            QuestionConfig config = configCombo.getValue();
+            Set<String> mainTags = mainTagsCombo.getValue();
+            Set<String> secondaryTags = secondaryTagsCombo.getValue();
+
+            InterviewSession session = new InterviewSession();
+            session.setId(UUID.randomUUID());
+            session.setCandidateName(candidateName);
+            session.setConfigName(config != null ? config.getName() : "");
+            session.setTotalQuestions(selectedQuestions.size());
+            session.setMainTags(String.join(", ", mainTags));
+            session.setSecondaryTags(String.join(", ", secondaryTags));
+            session.setStatus("IN_PROGRESS");
+            session.setNotes("");
+
+            List<InterviewSessionQuestion> sessionQuestions = new ArrayList<>();
+            for (int i = 0; i < selectedQuestions.size(); i++) {
+                InterviewSessionQuestion sq = new InterviewSessionQuestion();
+                sq.setId(UUID.randomUUID());
+                sq.setQuestionNumber(i + 1);
+                sq.setQuestion(selectedQuestions.get(i));
+                sq.setAnswerStatus("NOT_ASKED");
+                sq.setSession(session);
+                sessionQuestions.add(sq);
+            }
+            session.setSessionQuestions(sessionQuestions);
+
+            sessionService.save(session);
+
+            getUI().ifPresent(ui -> ui.navigate(
+                    AbstractInterviewSessionView.ROUTE_NAME + "/" + session.getId().toString()));
+        });
+
+        add(row1, row2, warningsDiv, reviewListLayout, startSessionButton);
     }
 
-    private List<Question> pickRandom(List<Question> pool, int amount, Random random) {
-        if (amount >= pool.size()) {
-            return new ArrayList<>(pool);
+    private void generateQuestionList(QuestionConfig config, List<String> mainTags, List<String> secondaryTags, int totalQuestions) {
+        selectedQuestions.clear();
+        List<String> warnings = new ArrayList<>();
+
+        // Calculate main/secondary split
+        int mainCount = (int) Math.ceil(totalQuestions * 0.6);
+        int secondaryCount = totalQuestions - mainCount;
+
+        // If no secondary tags, all questions come from main
+        if (secondaryTags.isEmpty()) {
+            mainCount = totalQuestions;
+            secondaryCount = 0;
         }
-        List<Question> shuffled = new ArrayList<>(pool);
-        Collections.shuffle(shuffled, random);
-        return shuffled.subList(0, amount);
+
+        // Get difficulty percentages
+        Map<Integer, Integer> diffPercents = new LinkedHashMap<>();
+        diffPercents.put(1, config.getDifficulty1Percent() != null ? config.getDifficulty1Percent() : 0);
+        diffPercents.put(2, config.getDifficulty2Percent() != null ? config.getDifficulty2Percent() : 0);
+        diffPercents.put(3, config.getDifficulty3Percent() != null ? config.getDifficulty3Percent() : 0);
+        diffPercents.put(4, config.getDifficulty4Percent() != null ? config.getDifficulty4Percent() : 0);
+        diffPercents.put(5, config.getDifficulty5Percent() != null ? config.getDifficulty5Percent() : 0);
+
+        Random random = new Random();
+        Set<UUID> usedIds = new HashSet<>();
+
+        // Pick main tag questions per difficulty
+        for (Map.Entry<Integer, Integer> entry : diffPercents.entrySet()) {
+            int difficulty = entry.getKey();
+            int percent = entry.getValue();
+            if (percent <= 0) continue;
+
+            int needed = (int) Math.ceil(mainCount * percent / 100.0);
+            List<Question> pool = questionService.findByTagsAndDifficulty(mainTags, difficulty)
+                    .stream().filter(q -> !usedIds.contains(q.getId())).collect(Collectors.toList());
+
+            List<Question> picked = pickRandom(pool, needed, random);
+            picked.forEach(q -> usedIds.add(q.getId()));
+            selectedQuestions.addAll(picked);
+
+            if (picked.size() < needed) {
+                warnings.add("Missing " + (needed - picked.size()) + " main-tag questions at level " + difficulty
+                        + " for tags: " + String.join(", ", mainTags));
+            }
+        }
+
+        // Pick secondary tag questions per difficulty
+        if (secondaryCount > 0 && !secondaryTags.isEmpty()) {
+            for (Map.Entry<Integer, Integer> entry : diffPercents.entrySet()) {
+                int difficulty = entry.getKey();
+                int percent = entry.getValue();
+                if (percent <= 0) continue;
+
+                int needed = (int) Math.ceil(secondaryCount * percent / 100.0);
+                List<Question> pool = questionService.findByTagsAndDifficulty(secondaryTags, difficulty)
+                        .stream().filter(q -> !usedIds.contains(q.getId())).collect(Collectors.toList());
+
+                List<Question> picked = pickRandom(pool, needed, random);
+                picked.forEach(q -> usedIds.add(q.getId()));
+                selectedQuestions.addAll(picked);
+
+                if (picked.size() < needed) {
+                    warnings.add("Missing " + (needed - picked.size()) + " secondary-tag questions at level " + difficulty
+                            + " for tags: " + String.join(", ", secondaryTags));
+                }
+            }
+        }
+
+        // Show warnings
+        warningsDiv.removeAll();
+        if (!warnings.isEmpty()) {
+            warningsDiv.setVisible(true);
+            warningsDiv.getStyle()
+                    .set("padding", "12px 16px")
+                    .set("margin-top", "8px")
+                    .set("border-radius", "8px")
+                    .set("background", "rgba(var(--bervan-warning-rgb, 245,158,11), 0.15)")
+                    .set("border", "1px solid rgba(var(--bervan-warning-rgb, 245,158,11), 0.3)");
+            H4 warnTitle = new H4("Warnings");
+            warnTitle.getStyle().set("margin", "0 0 8px 0").set("color", "#f59e0b");
+            warningsDiv.add(warnTitle);
+            for (String w : warnings) {
+                Div line = new Div();
+                line.setText(w);
+                line.getStyle().set("color", "var(--bervan-text-secondary, #94a3b8)").set("margin-bottom", "4px");
+                warningsDiv.add(line);
+            }
+        } else {
+            warningsDiv.setVisible(false);
+        }
     }
 
-    private com.vaadin.flow.component.Component buildQuestionCard(int number, Question question) {
+    private void renderReviewList() {
+        reviewListLayout.removeAll();
+        reviewListLayout.setVisible(true);
+        startSessionButton.setVisible(true);
+
+        H3 header = new H3("Review Questions (" + selectedQuestions.size() + ")");
+        reviewListLayout.add(header);
+
+        for (int i = 0; i < selectedQuestions.size(); i++) {
+            Question q = selectedQuestions.get(i);
+            int idx = i;
+            Div card = buildReviewCard(idx + 1, q, () -> {
+                selectedQuestions.remove(idx);
+                renderReviewList();
+            });
+            reviewListLayout.add(card);
+        }
+
+        // Add question button
+        Button addButton = new Button("Add Question", new Icon(VaadinIcon.PLUS));
+        addButton.addClassName("option-button");
+        addButton.addClickListener(e -> openAddQuestionDialog());
+        reviewListLayout.add(addButton);
+
+        // Summary
+        Div summary = new Div();
+        summary.getStyle()
+                .set("margin-top", "16px")
+                .set("padding", "12px 16px")
+                .set("border-radius", "8px")
+                .set("background", "rgba(99, 102, 241, 0.1)");
+
+        Map<Integer, Long> byDifficulty = selectedQuestions.stream()
+                .collect(Collectors.groupingBy(Question::getDifficulty, Collectors.counting()));
+        StringBuilder sb = new StringBuilder("Total: " + selectedQuestions.size() + " questions — ");
+        byDifficulty.entrySet().stream().sorted(Map.Entry.comparingByKey())
+                .forEach(e -> sb.append("L").append(e.getKey()).append(": ").append(e.getValue()).append("  "));
+        summary.add(new Span(sb.toString()));
+        reviewListLayout.add(summary);
+    }
+
+    private Div buildReviewCard(int number, Question question, Runnable onRemove) {
         Div card = new Div();
         card.getStyle()
                 .set("width", "100%")
-                .set("padding", "12px 16px")
-                .set("margin-bottom", "8px")
+                .set("padding", "10px 16px")
+                .set("margin-bottom", "6px")
                 .set("border-radius", "8px")
                 .set("border", "1px solid var(--bervan-border-color, #334155)")
                 .set("background", "var(--bervan-surface-hover, rgba(255,255,255,0.03))");
 
-        // Header row: number + name + difficulty badge + max points
         HorizontalLayout headerRow = new HorizontalLayout();
         headerRow.setWidthFull();
         headerRow.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -184,7 +355,17 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
                 .set("background", getDifficultyColor(question.getDifficulty()) + "22")
                 .set("color", getDifficultyColor(question.getDifficulty()));
 
-        headerRow.add(numberBadge, name, diffBadge);
+        Span tags = new Span(question.getTags() != null ? question.getTags() : "");
+        tags.getStyle()
+                .set("font-size", "0.8rem")
+                .set("color", "var(--bervan-text-tertiary, #64748b)")
+                .set("margin-left", "8px");
+
+        Button removeBtn = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
+        removeBtn.getStyle().set("color", "#ef4444").set("cursor", "pointer");
+        removeBtn.addClickListener(e -> onRemove.run());
+
+        headerRow.add(numberBadge, name, diffBadge, tags, removeBtn);
 
         if (question.getMaxPoints() > 0) {
             Span points = new Span(String.format("%.0f pts", question.getMaxPoints()));
@@ -192,25 +373,12 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
                     .set("font-size", "0.8rem")
                     .set("color", "var(--bervan-text-tertiary, #64748b)")
                     .set("margin-left", "8px");
-            headerRow.add(points);
+            headerRow.addComponentAtIndex(headerRow.getComponentCount() - 1, points);
         }
 
         card.add(headerRow);
 
-        // Question details
-        if (question.getQuestionDetails() != null && !question.getQuestionDetails().isBlank()) {
-            Div questionText = new Div();
-            questionText.getElement().setProperty("innerHTML", question.getQuestionDetails());
-            questionText.getStyle()
-                    .set("margin-top", "8px")
-                    .set("padding", "8px 12px")
-                    .set("border-left", "3px solid var(--bervan-border-color, #475569)")
-                    .set("color", "var(--bervan-text-primary, #e2e8f0)");
-
-            card.add(questionText);
-        }
-
-        // Answer (hidden by default, expandable)
+        // Expandable answer
         if (question.getAnswerDetails() != null && !question.getAnswerDetails().isBlank()) {
             Div answerContent = new Div();
             answerContent.getElement().setProperty("innerHTML", question.getAnswerDetails());
@@ -221,22 +389,84 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
 
             Details answerDetails = new Details("Show Answer", answerContent);
             answerDetails.setOpened(false);
-            answerDetails.getStyle().set("margin-top", "8px");
+            answerDetails.getStyle().set("margin-top", "6px");
             card.add(answerDetails);
         }
 
         return card;
     }
 
-    private String getDifficultyLabel(int difficulty) {
-        return switch (difficulty) {
-            case 1 -> "Basic";
-            case 2 -> "Junior";
-            case 3 -> "Mid";
-            case 4 -> "Senior";
-            case 5 -> "Expert";
-            default -> "Unknown";
-        };
+    private void openAddQuestionDialog() {
+        Dialog dialog = new Dialog();
+        dialog.setWidth("600px");
+        dialog.setHeaderTitle("Add Question");
+
+        TextField searchField = new TextField("Search by name");
+        searchField.setWidthFull();
+
+        VerticalLayout resultsList = new VerticalLayout();
+        resultsList.setPadding(false);
+        resultsList.setWidthFull();
+
+        Set<UUID> usedIds = selectedQuestions.stream().map(Question::getId).collect(Collectors.toSet());
+
+        searchField.addValueChangeListener(e -> {
+            resultsList.removeAll();
+            String query = e.getValue();
+            if (query == null || query.length() < 2) return;
+
+            List<Question> allQuestions = questionService.load(PageRequest.of(0, 10000)).stream()
+                    .map(q -> (Question) q)
+                    .filter(q -> !usedIds.contains(q.getId()))
+                    .filter(q -> q.getName() != null && q.getName().toLowerCase().contains(query.toLowerCase()))
+                    .limit(20)
+                    .collect(Collectors.toList());
+
+            for (Question q : allQuestions) {
+                HorizontalLayout row = new HorizontalLayout();
+                row.setWidthFull();
+                row.setAlignItems(FlexComponent.Alignment.CENTER);
+
+                Span qName = new Span(q.getName() + " (L" + q.getDifficulty() + ")");
+                qName.getStyle().set("flex-grow", "1");
+
+                Span qTags = new Span(q.getTags() != null ? q.getTags() : "");
+                qTags.getStyle().set("color", "var(--bervan-text-tertiary, #64748b)").set("font-size", "0.85rem");
+
+                Button addBtn = new Button("Add", new Icon(VaadinIcon.PLUS));
+                addBtn.addClickListener(ev -> {
+                    selectedQuestions.add(q);
+                    usedIds.add(q.getId());
+                    dialog.close();
+                    renderReviewList();
+                });
+
+                row.add(qName, qTags, addBtn);
+                resultsList.add(row);
+            }
+
+            if (allQuestions.isEmpty()) {
+                resultsList.add(new Span("No matching questions found."));
+            }
+        });
+
+        VerticalLayout content = new VerticalLayout(searchField, resultsList);
+        content.setPadding(false);
+        dialog.add(content);
+
+        Button closeBtn = new Button("Close", e -> dialog.close());
+        dialog.getFooter().add(closeBtn);
+
+        dialog.open();
+    }
+
+    private List<Question> pickRandom(List<Question> pool, int amount, Random random) {
+        if (amount >= pool.size()) {
+            return new ArrayList<>(pool);
+        }
+        List<Question> shuffled = new ArrayList<>(pool);
+        Collections.shuffle(shuffled, random);
+        return shuffled.subList(0, amount);
     }
 
     private String getDifficultyColor(int difficulty) {
@@ -248,49 +478,5 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             case 5 -> "#ef4444";
             default -> "#64748b";
         };
-    }
-
-    private Map<Integer, Integer> getAmountOfLvlBasedQuestions(String selectedLvl, int levelNumber) {
-        Map<Integer, Integer> result = new HashMap<>();
-        List<QuestionConfig> questionConfig = questionConfigService.loadByName(selectedLvl);
-
-        if (!questionConfig.isEmpty()) {
-            QuestionConfig config = questionConfig.get(0);
-            result.put(1, config.getDifficulty1Amount() != null ? config.getDifficulty1Amount() : 0);
-            result.put(2, config.getDifficulty2Amount() != null ? config.getDifficulty2Amount() : 0);
-            result.put(3, config.getDifficulty3Amount() != null ? config.getDifficulty3Amount() : 0);
-            result.put(4, config.getDifficulty4Amount() != null ? config.getDifficulty4Amount() : 0);
-            result.put(5, config.getDifficulty5Amount() != null ? config.getDifficulty5Amount() : 0);
-        } else {
-            result = getDefaultDistribution(levelNumber);
-        }
-
-        return result;
-    }
-
-    private Map<Integer, Integer> getDefaultDistribution(int levelNumber) {
-        Map<Integer, Integer> result = new HashMap<>();
-        // Auto-distribute based on experience level (0-6)
-        // Lower experience = more easy questions, higher = more hard
-        switch (levelNumber) {
-            case 0 -> { result.put(1, 5); result.put(2, 3); result.put(3, 1); result.put(4, 0); result.put(5, 0); }
-            case 1 -> { result.put(1, 4); result.put(2, 4); result.put(3, 2); result.put(4, 0); result.put(5, 0); }
-            case 2 -> { result.put(1, 2); result.put(2, 4); result.put(3, 3); result.put(4, 1); result.put(5, 0); }
-            case 3 -> { result.put(1, 1); result.put(2, 3); result.put(3, 4); result.put(4, 2); result.put(5, 0); }
-            case 4 -> { result.put(1, 0); result.put(2, 2); result.put(3, 3); result.put(4, 3); result.put(5, 2); }
-            case 5 -> { result.put(1, 0); result.put(2, 1); result.put(3, 2); result.put(4, 4); result.put(5, 3); }
-            default -> { result.put(1, 0); result.put(2, 0); result.put(3, 2); result.put(4, 4); result.put(5, 4); }
-        }
-        return result;
-    }
-
-    private Integer getAmountOfSpringSecurityQuestions(String selectedLvl, int levelNumber) {
-        List<QuestionConfig> questionConfig = questionConfigService.loadByName(selectedLvl);
-
-        if (!questionConfig.isEmpty()) {
-            return questionConfig.get(0).getSpringSecurityAmount();
-        }
-        // Default: spring security from level 3+
-        return levelNumber >= 3 ? 2 : 0;
     }
 }

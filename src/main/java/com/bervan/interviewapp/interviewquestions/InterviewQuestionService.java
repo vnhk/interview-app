@@ -40,6 +40,49 @@ public class InterviewQuestionService extends BaseService<UUID, Question> {
         return historyRepository.findAll();
     }
 
+    public List<Question> findByTagsAndDifficulty(List<String> tags, int difficulty) {
+        List<Question> allByDifficulty = repository.findAllByDifficultyAndOwnersId(difficulty, AuthService.getLoggedUserId());
+        return allByDifficulty.stream()
+                .filter(q -> hasAnyTag(q, tags))
+                .collect(Collectors.toList());
+    }
+
+    public List<Question> findByTags(List<String> tags) {
+        List<Question> all = repository.findAllByOwnersId(AuthService.getLoggedUserId());
+        return all.stream()
+                .filter(q -> hasAnyTag(q, tags))
+                .collect(Collectors.toList());
+    }
+
+    public Set<String> getAllDistinctTags() {
+        List<Question> all = repository.findAllByOwnersId(AuthService.getLoggedUserId());
+        Set<String> tags = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (Question q : all) {
+            if (q.getTags() != null && !q.getTags().isBlank()) {
+                for (String tag : q.getTags().split(",")) {
+                    String trimmed = tag.trim();
+                    if (!trimmed.isEmpty()) {
+                        tags.add(trimmed);
+                    }
+                }
+            }
+        }
+        return tags;
+    }
+
+    private boolean hasAnyTag(Question question, List<String> tags) {
+        if (question.getTags() == null || question.getTags().isBlank()) {
+            return false;
+        }
+        Set<String> questionTags = Arrays.stream(question.getTags().split(","))
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+        return tags.stream()
+                .map(String::toLowerCase)
+                .anyMatch(questionTags::contains);
+    }
+
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<Question> findByDifficultyNotSpringSecurity(Integer difficulty) {
         return repository.findAllByDifficultyAndOwnersId(difficulty, AuthService.getLoggedUserId())

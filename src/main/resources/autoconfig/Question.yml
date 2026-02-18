@@ -10,13 +10,14 @@ columns:
     max: 255
 
   - field: tags
-    displayName: "Tags"
+    displayName: "Tags (comma-separated)"
     internalName: "tags"
-    strValues: ["Java/DB/Testing", "Security", "Frameworks"]
     inSaveForm: true
     inEditForm: true
     inTable: true
     required: true
+    min: 1
+    max: 500
 
   - field: difficulty
     displayName: "Difficulty"

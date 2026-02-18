@@ -7,6 +7,7 @@ import com.bervan.interviewapp.questionconfig.QuestionConfigService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -31,21 +32,23 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
         Grid<QuestionConfig> grid = new Grid<>(QuestionConfig.class, false);
         grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(questionConfig.getTableFilterableColumnValue())))
                 .setHeader("Name").setKey("name").setResizable(true).setSortable(true);
-        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(String.valueOf(questionConfig.getDifficulty1Amount()))))
-                .setHeader("Level 1 Questions").setKey("difficulty1Amount").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(String.valueOf(questionConfig.getDifficulty2Amount()))))
-                .setHeader("Level 2 Questions").setKey("difficulty2Amount").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(String.valueOf(questionConfig.getDifficulty3Amount()))))
-                .setHeader("Level 3 Questions").setKey("difficulty3Amount").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(String.valueOf(questionConfig.getDifficulty4Amount()))))
-                .setHeader("Level 4 Questions").setKey("difficulty4Amount").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(String.valueOf(questionConfig.getDifficulty5Amount()))))
-                .setHeader("Level 5 Questions").setKey("difficulty5Amount").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(String.valueOf(questionConfig.getSpringSecurityAmount()))))
-                .setHeader("Spring Security Questions").setKey("springSecurityAmount").setResizable(true);
+        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(percentStr(questionConfig.getDifficulty1Percent()))))
+                .setHeader("Level 1 %").setKey("difficulty1Percent").setResizable(true);
+        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(percentStr(questionConfig.getDifficulty2Percent()))))
+                .setHeader("Level 2 %").setKey("difficulty2Percent").setResizable(true);
+        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(percentStr(questionConfig.getDifficulty3Percent()))))
+                .setHeader("Level 3 %").setKey("difficulty3Percent").setResizable(true);
+        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(percentStr(questionConfig.getDifficulty4Percent()))))
+                .setHeader("Level 4 %").setKey("difficulty4Percent").setResizable(true);
+        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(percentStr(questionConfig.getDifficulty5Percent()))))
+                .setHeader("Level 5 %").setKey("difficulty5Percent").setResizable(true);
         grid.getElement().getStyle().set("--lumo-size-m", 100 + "px");
 
         return grid;
+    }
+
+    private String percentStr(Integer value) {
+        return value != null ? value + "%" : "0%";
     }
 
     @Override
@@ -54,51 +57,29 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
 
         switch (clickedField) {
             case "name" -> {
-                field = new IntegerField("Name");
+                field = new TextField("Name");
                 field.setWidth("100%");
                 field.setValue(item.getTableFilterableColumnValue());
             }
-            case "difficulty1Amount" -> {
-                IntegerField integerField = new IntegerField("Level 1 Questions");
-                integerField.setMax(20);
-                field = integerField;
-                field.setWidth("100%");
-                field.setValue(item.getDifficulty1Amount());
+            case "difficulty1Percent" -> {
+                field = createPercentField("Level 1 %");
+                field.setValue(item.getDifficulty1Percent());
             }
-            case "difficulty2Amount" -> {
-                IntegerField integerField = new IntegerField("Level 2 Questions");
-                integerField.setMax(20);
-                field = integerField;
-                field.setWidth("100%");
-                field.setValue(item.getDifficulty2Amount());
+            case "difficulty2Percent" -> {
+                field = createPercentField("Level 2 %");
+                field.setValue(item.getDifficulty2Percent());
             }
-            case "difficulty3Amount" -> {
-                IntegerField integerField = new IntegerField("Level 3 Questions");
-                integerField.setMax(20);
-                field = integerField;
-                field.setWidth("100%");
-                field.setValue(item.getDifficulty3Amount());
+            case "difficulty3Percent" -> {
+                field = createPercentField("Level 3 %");
+                field.setValue(item.getDifficulty3Percent());
             }
-            case "difficulty4Amount" -> {
-                IntegerField integerField = new IntegerField("Level 4 Questions");
-                integerField.setMax(20);
-                field = integerField;
-                field.setWidth("100%");
-                field.setValue(item.getDifficulty4Amount());
+            case "difficulty4Percent" -> {
+                field = createPercentField("Level 4 %");
+                field.setValue(item.getDifficulty4Percent());
             }
-            case "difficulty5Amount" -> {
-                IntegerField integerField = new IntegerField("Level 5 Questions");
-                integerField.setMax(20);
-                field = integerField;
-                field.setWidth("100%");
-                field.setValue(item.getDifficulty5Amount());
-            }
-            case "springSecurityAmount" -> {
-                IntegerField integerField = new IntegerField("Spring Security Questions");
-                integerField.setMax(20);
-                field = integerField;
-                field.setWidth("100%");
-                field.setValue(item.getSpringSecurityAmount());
+            case "difficulty5Percent" -> {
+                field = createPercentField("Level 5 %");
+                field.setValue(item.getDifficulty5Percent());
             }
             default -> throw new RuntimeException("Invalid column!");
         }
@@ -110,12 +91,11 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
 
             switch (clickedField) {
                 case "name" -> item.setName((String) field.getValue());
-                case "difficulty1Amount" -> item.setDifficulty1Amount((Integer) field.getValue());
-                case "difficulty2Amount" -> item.setDifficulty2Amount((Integer) field.getValue());
-                case "difficulty3Amount" -> item.setDifficulty3Amount((Integer) field.getValue());
-                case "difficulty4Amount" -> item.setDifficulty4Amount((Integer) field.getValue());
-                case "difficulty5Amount" -> item.setDifficulty5Amount((Integer) field.getValue());
-                case "springSecurityAmount" -> item.setSpringSecurityAmount((Integer) field.getValue());
+                case "difficulty1Percent" -> item.setDifficulty1Percent((Integer) field.getValue());
+                case "difficulty2Percent" -> item.setDifficulty2Percent((Integer) field.getValue());
+                case "difficulty3Percent" -> item.setDifficulty3Percent((Integer) field.getValue());
+                case "difficulty4Percent" -> item.setDifficulty4Percent((Integer) field.getValue());
+                case "difficulty5Percent" -> item.setDifficulty5Percent((Integer) field.getValue());
             }
 
             grid.getDataProvider().refreshItem(item);
@@ -134,55 +114,53 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
         TextField nameField = new TextField("Name");
         nameField.setWidth("75%");
 
-        IntegerField difficulty1Amount = new IntegerField("Level 1 Questions");
-        difficulty1Amount.setMax(20);
-        difficulty1Amount.setWidth("25%");
+        IntegerField difficulty1Percent = createPercentField("Level 1 %");
+        IntegerField difficulty2Percent = createPercentField("Level 2 %");
+        IntegerField difficulty3Percent = createPercentField("Level 3 %");
+        IntegerField difficulty4Percent = createPercentField("Level 4 %");
+        IntegerField difficulty5Percent = createPercentField("Level 5 %");
 
-        IntegerField difficulty2Amount = new IntegerField("Level 2 Questions");
-        difficulty2Amount.setMax(20);
-        difficulty2Amount.setWidth("25%");
-
-        IntegerField difficulty3Amount = new IntegerField("Level 3 Questions");
-        difficulty3Amount.setMax(20);
-        difficulty3Amount.setWidth("25%");
-
-        IntegerField difficulty4Amount = new IntegerField("Level 4 Questions");
-        difficulty4Amount.setMax(20);
-        difficulty4Amount.setWidth("25%");
-
-        IntegerField difficulty5Amount = new IntegerField("Level 5 Questions");
-        difficulty5Amount.setMax(20);
-        difficulty5Amount.setWidth("25%");
-
-        IntegerField springSecurityAmount = new IntegerField("Spring Security Questions");
-        springSecurityAmount.setMax(20);
-        springSecurityAmount.setWidth("25%");
+        Span sumInfo = new Span("Percentages should sum to 100%");
+        sumInfo.getStyle().set("color", "var(--bervan-text-secondary, #94a3b8)").set("font-size", "0.85rem");
 
         Button saveButton = new Button("Save");
         saveButton.addClassName("option-button");
 
         saveButton.addClickListener(e -> {
             String name = nameField.getValue();
-            Integer a1 = difficulty1Amount.getValue();
-            Integer a2 = difficulty2Amount.getValue();
-            Integer a3 = difficulty3Amount.getValue();
-            Integer a4 = difficulty4Amount.getValue();
-            Integer a5 = difficulty5Amount.getValue();
-            Integer s = springSecurityAmount.getValue();
+            Integer p1 = difficulty1Percent.getValue() != null ? difficulty1Percent.getValue() : 0;
+            Integer p2 = difficulty2Percent.getValue() != null ? difficulty2Percent.getValue() : 0;
+            Integer p3 = difficulty3Percent.getValue() != null ? difficulty3Percent.getValue() : 0;
+            Integer p4 = difficulty4Percent.getValue() != null ? difficulty4Percent.getValue() : 0;
+            Integer p5 = difficulty5Percent.getValue() != null ? difficulty5Percent.getValue() : 0;
+
+            int sum = p1 + p2 + p3 + p4 + p5;
+            if (sum != 100) {
+                showWarningNotification("Percentages must sum to 100% (currently " + sum + "%)");
+                return;
+            }
 
             QuestionConfig newQuestionConfig = new QuestionConfig();
             newQuestionConfig.setName(name);
-            newQuestionConfig.setDifficulty1Amount(a1);
-            newQuestionConfig.setDifficulty2Amount(a2);
-            newQuestionConfig.setDifficulty3Amount(a3);
-            newQuestionConfig.setDifficulty4Amount(a4);
-            newQuestionConfig.setDifficulty5Amount(a5);
-            newQuestionConfig.setSpringSecurityAmount(s);
+            newQuestionConfig.setDifficulty1Percent(p1);
+            newQuestionConfig.setDifficulty2Percent(p2);
+            newQuestionConfig.setDifficulty3Percent(p3);
+            newQuestionConfig.setDifficulty4Percent(p4);
+            newQuestionConfig.setDifficulty5Percent(p5);
             data.add(newQuestionConfig);
-            grid.setItems(data); // Refresh the grid
+            grid.setItems(data);
             service.save(data.stream().toList());
             dialog.close();
         });
-        dialogLayout.add(headerLayout, nameField, difficulty1Amount, difficulty2Amount, difficulty3Amount, difficulty4Amount, difficulty5Amount, saveButton);
+        dialogLayout.add(headerLayout, nameField, difficulty1Percent, difficulty2Percent, difficulty3Percent, difficulty4Percent, difficulty5Percent, sumInfo, saveButton);
+    }
+
+    private IntegerField createPercentField(String label) {
+        IntegerField field = new IntegerField(label);
+        field.setMin(0);
+        field.setMax(100);
+        field.setSuffixComponent(new Span("%"));
+        field.setWidth("25%");
+        return field;
     }
 }
