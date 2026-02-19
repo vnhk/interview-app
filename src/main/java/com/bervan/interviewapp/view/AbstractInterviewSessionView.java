@@ -1,8 +1,10 @@
 package com.bervan.interviewapp.view;
 
 import com.bervan.common.view.AbstractPageView;
+import com.bervan.interviewapp.codingtask.CodingTask;
 import com.bervan.interviewapp.interviewquestions.Question;
 import com.bervan.interviewapp.session.InterviewSession;
+import com.bervan.interviewapp.session.InterviewSessionCodingTask;
 import com.bervan.interviewapp.session.InterviewSessionQuestion;
 import com.bervan.interviewapp.session.InterviewSessionService;
 import com.vaadin.flow.component.button.Button;
@@ -21,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public abstract class AbstractInterviewSessionView extends AbstractPageView implements HasUrlParameter<String> {
@@ -39,7 +43,6 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
 
     @Override
     public void setParameter(BeforeEvent event, String parameter) {
-        // Clear old content
         getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
 
         if (parameter == null || parameter.isBlank()) {
@@ -95,23 +98,46 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
                 + " | Secondary tags: " + (session.getSecondaryTags() != null ? session.getSecondaryTags() : "—")
                 + " | Questions: " + session.getTotalQuestions());
 
-        // --- Global Notes ---
+        // Global Notes
         TextArea globalNotes = new TextArea("Interview Notes");
         globalNotes.setWidthFull();
         globalNotes.setHeight("120px");
         globalNotes.setValue(session.getNotes() != null ? session.getNotes() : "");
 
-        // --- Question Cards ---
-        VerticalLayout questionsLayout = new VerticalLayout();
-        questionsLayout.setPadding(false);
-        questionsLayout.setWidthFull();
+        add(headerRow, infoRow, globalNotes);
 
+        // --- Scripted content from plan template ---
         List<InterviewSessionQuestion> sortedQuestions = session.getSessionQuestions().stream()
                 .sorted(Comparator.comparing(InterviewSessionQuestion::getQuestionNumber))
                 .collect(Collectors.toList());
 
-        for (InterviewSessionQuestion sq : sortedQuestions) {
-            questionsLayout.add(buildSessionQuestionCard(sq));
+        List<InterviewSessionCodingTask> sortedCodingTasks = session.getSessionCodingTasks() != null
+                ? session.getSessionCodingTasks().stream()
+                .sorted(Comparator.comparing(InterviewSessionCodingTask::getTaskNumber))
+                .collect(Collectors.toList())
+                : List.of();
+
+        String planTemplate = session.getPlanTemplate();
+
+        if (planTemplate != null && !planTemplate.isBlank()) {
+            renderFromTemplate(planTemplate, sortedQuestions, sortedCodingTasks);
+        } else {
+            // Fallback: just render questions and coding tasks directly
+            VerticalLayout questionsLayout = new VerticalLayout();
+            questionsLayout.setPadding(false);
+            questionsLayout.setWidthFull();
+            for (InterviewSessionQuestion sq : sortedQuestions) {
+                questionsLayout.add(buildSessionQuestionCard(sq));
+            }
+            add(questionsLayout);
+
+            if (!sortedCodingTasks.isEmpty()) {
+                H3 codingHeader = new H3("Coding Tasks");
+                add(codingHeader);
+                for (InterviewSessionCodingTask sct : sortedCodingTasks) {
+                    add(buildSessionCodingTaskCard(sct));
+                }
+            }
         }
 
         // --- Action Buttons ---
@@ -133,19 +159,82 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             session.setStatus("COMPLETED");
             sessionService.save(session);
             showSuccessNotification("Interview completed!");
-            // Rebuild to show summary
             getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
             buildSessionContent();
         });
 
         actions.add(saveButton, completeButton);
+        add(actions);
 
-        add(headerRow, infoRow, globalNotes, questionsLayout, actions);
-
-        // --- Summary (only when completed) ---
         if ("COMPLETED".equals(session.getStatus())) {
-            add(buildSummary(sortedQuestions));
+            add(buildSummary(sortedQuestions, sortedCodingTasks));
         }
+    }
+
+    private void renderFromTemplate(String template, List<InterviewSessionQuestion> questions, List<InterviewSessionCodingTask> codingTasks) {
+        // Replace simple text variables
+        String text = template
+                .replace("{candidateName}", session.getCandidateName() != null ? session.getCandidateName() : "")
+                .replace("{configName}", session.getConfigName() != null ? session.getConfigName() : "")
+                .replace("{mainTags}", session.getMainTags() != null ? session.getMainTags() : "")
+                .replace("{secondaryTags}", session.getSecondaryTags() != null ? session.getSecondaryTags() : "")
+                .replace("{totalQuestions}", String.valueOf(session.getTotalQuestions() != null ? session.getTotalQuestions() : 0));
+
+        // Split on {questions} and {codingTasks} placeholders
+        Pattern pattern = Pattern.compile("(\\{questions}|\\{codingTasks})");
+        Matcher matcher = pattern.matcher(text);
+
+        int lastEnd = 0;
+        while (matcher.find()) {
+            // Text before placeholder
+            String before = text.substring(lastEnd, matcher.start());
+            if (!before.isEmpty()) {
+                add(buildScriptTextBlock(before));
+            }
+
+            String placeholder = matcher.group(1);
+            if ("{questions}".equals(placeholder)) {
+                VerticalLayout questionsLayout = new VerticalLayout();
+                questionsLayout.setPadding(false);
+                questionsLayout.setWidthFull();
+                for (InterviewSessionQuestion sq : questions) {
+                    questionsLayout.add(buildSessionQuestionCard(sq));
+                }
+                add(questionsLayout);
+            } else if ("{codingTasks}".equals(placeholder)) {
+                VerticalLayout codingLayout = new VerticalLayout();
+                codingLayout.setPadding(false);
+                codingLayout.setWidthFull();
+                for (InterviewSessionCodingTask sct : codingTasks) {
+                    codingLayout.add(buildSessionCodingTaskCard(sct));
+                }
+                add(codingLayout);
+            }
+
+            lastEnd = matcher.end();
+        }
+
+        // Text after last placeholder
+        String remaining = text.substring(lastEnd);
+        if (!remaining.isEmpty()) {
+            add(buildScriptTextBlock(remaining));
+        }
+    }
+
+    private Div buildScriptTextBlock(String text) {
+        Div block = new Div();
+        block.setText(text);
+        block.getStyle()
+                .set("white-space", "pre-wrap")
+                .set("padding", "12px 16px")
+                .set("margin", "8px 0")
+                .set("border-radius", "8px")
+                .set("background", "rgba(99, 102, 241, 0.06)")
+                .set("border-left", "3px solid rgba(99, 102, 241, 0.3)")
+                .set("color", "var(--bervan-text-primary, #e2e8f0)")
+                .set("font-size", "1rem")
+                .set("line-height", "1.6");
+        return block;
     }
 
     private com.vaadin.flow.component.Component buildSessionQuestionCard(InterviewSessionQuestion sq) {
@@ -160,7 +249,6 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
                 .set("border", "1px solid var(--bervan-border-color, #334155)")
                 .set("background", getCardBackground(sq.getAnswerStatus()));
 
-        // Header row
         HorizontalLayout headerRow = new HorizontalLayout();
         headerRow.setWidthFull();
         headerRow.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -189,7 +277,6 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         headerRow.add(numberBadge, name, diffBadge);
         card.add(headerRow);
 
-        // Question details (expandable)
         if (question != null && question.getQuestionDetails() != null && !question.getQuestionDetails().isBlank()) {
             Div questionText = new Div();
             questionText.getElement().setProperty("innerHTML", question.getQuestionDetails());
@@ -201,7 +288,6 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             card.add(questionText);
         }
 
-        // Answer (expandable)
         if (question != null && question.getAnswerDetails() != null && !question.getAnswerDetails().isBlank()) {
             Div answerContent = new Div();
             answerContent.getElement().setProperty("innerHTML", question.getAnswerDetails());
@@ -216,7 +302,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             card.add(answerDetails);
         }
 
-        // --- Answer status buttons ---
+        // Answer status buttons
         HorizontalLayout statusRow = new HorizontalLayout();
         statusRow.setAlignItems(FlexComponent.Alignment.CENTER);
         statusRow.getStyle().set("margin-top", "8px");
@@ -248,9 +334,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
 
             btn.addClickListener(e -> {
                 sq.setAnswerStatus(statusVal);
-                // Re-render card background
                 card.getStyle().set("background", getCardBackground(statusVal));
-                // Update button styles
                 statusRow.getChildren().forEach(c -> {
                     if (c instanceof Button b) {
                         b.getStyle()
@@ -268,7 +352,6 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             statusRow.add(btn);
         }
 
-        // Score field
         NumberField scoreField = new NumberField("Score");
         scoreField.setWidth("80px");
         scoreField.setMin(0);
@@ -279,7 +362,6 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         statusRow.add(scoreField);
         card.add(statusRow);
 
-        // Notes
         TextArea notesField = new TextArea("Notes");
         notesField.setWidthFull();
         notesField.setHeight("60px");
@@ -290,7 +372,123 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         return card;
     }
 
-    private com.vaadin.flow.component.Component buildSummary(List<InterviewSessionQuestion> questions) {
+    private com.vaadin.flow.component.Component buildSessionCodingTaskCard(InterviewSessionCodingTask sct) {
+        CodingTask task = sct.getCodingTask();
+
+        Div card = new Div();
+        card.getStyle()
+                .set("width", "100%")
+                .set("padding", "12px 16px")
+                .set("margin-bottom", "8px")
+                .set("border-radius", "8px")
+                .set("border", "1px solid var(--bervan-border-color, #334155)")
+                .set("background", "rgba(168, 85, 247, 0.05)");
+
+        HorizontalLayout headerRow = new HorizontalLayout();
+        headerRow.setWidthFull();
+        headerRow.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        Span numberBadge = new Span("#" + sct.getTaskNumber());
+        numberBadge.getStyle()
+                .set("font-weight", "700")
+                .set("min-width", "36px")
+                .set("color", "#a855f7");
+
+        Span name = new Span(task != null && task.getName() != null ? task.getName() : "—");
+        name.getStyle()
+                .set("font-weight", "600")
+                .set("font-size", "1.05rem")
+                .set("flex-grow", "1");
+
+        Span badge = new Span("Coding Task");
+        badge.getStyle()
+                .set("padding", "2px 10px")
+                .set("border-radius", "9999px")
+                .set("font-size", "0.75rem")
+                .set("font-weight", "600")
+                .set("background", "#a855f722")
+                .set("color", "#a855f7");
+
+        headerRow.add(numberBadge, name, badge);
+        card.add(headerRow);
+
+        if (task != null) {
+            // Initial Code
+            if (task.getInitialCode() != null && !task.getInitialCode().isBlank()) {
+                Div codeContent = new Div();
+                codeContent.getElement().setProperty("innerHTML", "<pre style='margin:0;white-space:pre-wrap;'>" + escapeHtml(task.getInitialCode()) + "</pre>");
+                codeContent.getStyle()
+                        .set("padding", "8px 12px")
+                        .set("background", "rgba(0,0,0,0.2)")
+                        .set("border-radius", "6px")
+                        .set("font-family", "monospace")
+                        .set("font-size", "0.85rem");
+
+                Details codeDetails = new Details("Initial Code", codeContent);
+                codeDetails.setOpened(false);
+                codeDetails.getStyle().set("margin-top", "8px");
+                card.add(codeDetails);
+            }
+
+            // Example Solution
+            if (task.getExampleCode() != null && !task.getExampleCode().isBlank()) {
+                Div solutionContent = new Div();
+                solutionContent.getElement().setProperty("innerHTML", "<pre style='margin:0;white-space:pre-wrap;'>" + escapeHtml(task.getExampleCode()) + "</pre>");
+                solutionContent.getStyle()
+                        .set("padding", "8px 12px")
+                        .set("background", "rgba(0,0,0,0.2)")
+                        .set("border-radius", "6px")
+                        .set("font-family", "monospace")
+                        .set("font-size", "0.85rem");
+
+                Details solutionDetails = new Details("Example Solution", solutionContent);
+                solutionDetails.setOpened(false);
+                solutionDetails.getStyle().set("margin-top", "8px");
+                card.add(solutionDetails);
+            }
+
+            // Questions for the task
+            if (task.getQuestions() != null && !task.getQuestions().isBlank()) {
+                Div questionsContent = new Div();
+                questionsContent.setText(task.getQuestions());
+                questionsContent.getStyle()
+                        .set("white-space", "pre-wrap")
+                        .set("padding", "8px 12px")
+                        .set("border-left", "3px solid #a855f7")
+                        .set("color", "var(--bervan-text-primary, #e2e8f0)");
+
+                Details questionsDetails = new Details("Task Questions", questionsContent);
+                questionsDetails.setOpened(false);
+                questionsDetails.getStyle().set("margin-top", "8px");
+                card.add(questionsDetails);
+            }
+        }
+
+        // Score
+        NumberField scoreField = new NumberField("Score");
+        scoreField.setWidth("80px");
+        scoreField.setMin(0);
+        scoreField.setValue(sct.getScore() != null ? sct.getScore() : 0.0);
+        scoreField.addValueChangeListener(e -> sct.setScore(e.getValue()));
+        scoreField.getStyle().set("margin-top", "8px");
+        card.add(scoreField);
+
+        // Notes
+        TextArea notesField = new TextArea("Notes");
+        notesField.setWidthFull();
+        notesField.setHeight("60px");
+        notesField.setValue(sct.getNotes() != null ? sct.getNotes() : "");
+        notesField.addValueChangeListener(e -> sct.setNotes(e.getValue()));
+        card.add(notesField);
+
+        return card;
+    }
+
+    private String escapeHtml(String text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private com.vaadin.flow.component.Component buildSummary(List<InterviewSessionQuestion> questions, List<InterviewSessionCodingTask> codingTasks) {
         VerticalLayout summaryLayout = new VerticalLayout();
         summaryLayout.getStyle()
                 .set("margin-top", "24px")
@@ -303,7 +501,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         summaryTitle.getStyle().set("margin", "0 0 12px 0");
         summaryLayout.add(summaryTitle);
 
-        // Total score
+        // Total score (questions)
         double totalScore = questions.stream()
                 .filter(q -> q.getScore() != null)
                 .mapToDouble(InterviewSessionQuestion::getScore)
@@ -312,8 +510,21 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
                 .filter(q -> q.getQuestion() != null)
                 .mapToDouble(q -> q.getQuestion().getMaxPoints())
                 .sum();
-        summaryLayout.add(new Span(String.format("Total Score: %.1f / %.1f (%.0f%%)",
+
+        // Coding tasks score
+        double codingScore = codingTasks.stream()
+                .filter(ct -> ct.getScore() != null)
+                .mapToDouble(InterviewSessionCodingTask::getScore)
+                .sum();
+
+        summaryLayout.add(new Span(String.format("Questions Score: %.1f / %.1f (%.0f%%)",
                 totalScore, maxScore, maxScore > 0 ? (totalScore / maxScore * 100) : 0)));
+
+        if (!codingTasks.isEmpty()) {
+            summaryLayout.add(new Span(String.format("Coding Tasks Score: %.1f", codingScore)));
+        }
+
+        summaryLayout.add(new Span(String.format("Combined Score: %.1f", totalScore + codingScore)));
 
         // By status
         Map<String, Long> byStatus = questions.stream()

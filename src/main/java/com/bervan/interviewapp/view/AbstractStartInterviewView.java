@@ -1,11 +1,16 @@
 package com.bervan.interviewapp.view;
 
+import com.bervan.common.model.BaseOneValue;
+import com.bervan.common.onevalue.OneValueService;
 import com.bervan.common.view.AbstractPageView;
+import com.bervan.interviewapp.codingtask.CodingTask;
+import com.bervan.interviewapp.codingtask.CodingTaskService;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
 import com.bervan.interviewapp.interviewquestions.Question;
 import com.bervan.interviewapp.questionconfig.QuestionConfig;
 import com.bervan.interviewapp.questionconfig.QuestionConfigService;
 import com.bervan.interviewapp.session.InterviewSession;
+import com.bervan.interviewapp.session.InterviewSessionCodingTask;
 import com.bervan.interviewapp.session.InterviewSessionQuestion;
 import com.bervan.interviewapp.session.InterviewSessionService;
 import com.vaadin.flow.component.button.Button;
@@ -13,7 +18,6 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -40,8 +44,13 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
     private InterviewQuestionService questionService;
     @Autowired
     private InterviewSessionService sessionService;
+    @Autowired
+    private CodingTaskService codingTaskService;
+    @Autowired
+    private OneValueService oneValueService;
 
     private final List<Question> selectedQuestions = new ArrayList<>();
+    private final List<CodingTask> selectedCodingTasks = new ArrayList<>();
     private VerticalLayout reviewListLayout;
     private Div warningsDiv;
     private Button startSessionButton;
@@ -58,7 +67,6 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
     }
 
     private void buildContent() {
-        // Remove old content (keep pageLayout)
         getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
 
         // --- Controls ---
@@ -98,18 +106,15 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         HorizontalLayout row2 = new HorizontalLayout(mainTagsCombo, secondaryTagsCombo, generateButton);
         row2.setAlignItems(FlexComponent.Alignment.END);
 
-        // --- Warnings ---
         warningsDiv = new Div();
         warningsDiv.setWidthFull();
         warningsDiv.setVisible(false);
 
-        // --- Review List ---
         reviewListLayout = new VerticalLayout();
         reviewListLayout.setWidthFull();
         reviewListLayout.setPadding(false);
         reviewListLayout.setVisible(false);
 
-        // --- Start Session Button ---
         startSessionButton = new Button("Start Interview Session", new Icon(VaadinIcon.PLAY));
         startSessionButton.addClassName("option-button");
         startSessionButton.setVisible(false);
@@ -139,6 +144,7 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             int totalQuestions = totalQuestionsField.getValue() != null ? totalQuestionsField.getValue() : 20;
 
             generateQuestionList(config, new ArrayList<>(mainTags), new ArrayList<>(secondaryTags), totalQuestions);
+            generateCodingTaskList(config);
             renderReviewList();
         });
 
@@ -157,6 +163,13 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             Set<String> mainTags = mainTagsCombo.getValue();
             Set<String> secondaryTags = secondaryTagsCombo.getValue();
 
+            // Load plan template
+            String planTemplate = "";
+            List<? extends BaseOneValue> planValues = oneValueService.loadByKey("interview-plan");
+            if (!planValues.isEmpty() && planValues.get(0).getContent() != null) {
+                planTemplate = planValues.get(0).getContent();
+            }
+
             InterviewSession session = new InterviewSession();
             session.setId(UUID.randomUUID());
             session.setCandidateName(candidateName);
@@ -166,6 +179,7 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             session.setSecondaryTags(String.join(", ", secondaryTags));
             session.setStatus("IN_PROGRESS");
             session.setNotes("");
+            session.setPlanTemplate(planTemplate);
 
             List<InterviewSessionQuestion> sessionQuestions = new ArrayList<>();
             for (int i = 0; i < selectedQuestions.size(); i++) {
@@ -179,6 +193,17 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             }
             session.setSessionQuestions(sessionQuestions);
 
+            List<InterviewSessionCodingTask> sessionCodingTasks = new ArrayList<>();
+            for (int i = 0; i < selectedCodingTasks.size(); i++) {
+                InterviewSessionCodingTask sct = new InterviewSessionCodingTask();
+                sct.setId(UUID.randomUUID());
+                sct.setTaskNumber(i + 1);
+                sct.setCodingTask(selectedCodingTasks.get(i));
+                sct.setSession(session);
+                sessionCodingTasks.add(sct);
+            }
+            session.setSessionCodingTasks(sessionCodingTasks);
+
             sessionService.save(session);
 
             getUI().ifPresent(ui -> ui.navigate(
@@ -188,21 +213,30 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         add(row1, row2, warningsDiv, reviewListLayout, startSessionButton);
     }
 
+    private void generateCodingTaskList(QuestionConfig config) {
+        selectedCodingTasks.clear();
+        int amount = config.getCodingTasksAmount() != null ? config.getCodingTasksAmount() : 0;
+        if (amount <= 0) return;
+
+        List<CodingTask> allTasks = codingTaskService.load(PageRequest.of(0, 10000)).stream()
+                .map(e -> (CodingTask) e)
+                .collect(Collectors.toList());
+
+        selectedCodingTasks.addAll(pickRandom(allTasks, amount, new Random()));
+    }
+
     private void generateQuestionList(QuestionConfig config, List<String> mainTags, List<String> secondaryTags, int totalQuestions) {
         selectedQuestions.clear();
         List<String> warnings = new ArrayList<>();
 
-        // Calculate main/secondary split
         int mainCount = (int) Math.ceil(totalQuestions * 0.6);
         int secondaryCount = totalQuestions - mainCount;
 
-        // If no secondary tags, all questions come from main
         if (secondaryTags.isEmpty()) {
             mainCount = totalQuestions;
             secondaryCount = 0;
         }
 
-        // Get difficulty percentages
         Map<Integer, Integer> diffPercents = new LinkedHashMap<>();
         diffPercents.put(1, config.getDifficulty1Percent() != null ? config.getDifficulty1Percent() : 0);
         diffPercents.put(2, config.getDifficulty2Percent() != null ? config.getDifficulty2Percent() : 0);
@@ -213,7 +247,6 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         Random random = new Random();
         Set<UUID> usedIds = new HashSet<>();
 
-        // Pick main tag questions per difficulty
         for (Map.Entry<Integer, Integer> entry : diffPercents.entrySet()) {
             int difficulty = entry.getKey();
             int percent = entry.getValue();
@@ -233,7 +266,6 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             }
         }
 
-        // Pick secondary tag questions per difficulty
         if (secondaryCount > 0 && !secondaryTags.isEmpty()) {
             for (Map.Entry<Integer, Integer> entry : diffPercents.entrySet()) {
                 int difficulty = entry.getKey();
@@ -255,7 +287,6 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             }
         }
 
-        // Show warnings
         warningsDiv.removeAll();
         if (!warnings.isEmpty()) {
             warningsDiv.setVisible(true);
@@ -284,26 +315,35 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         reviewListLayout.setVisible(true);
         startSessionButton.setVisible(true);
 
-        H3 header = new H3("Review Questions (" + selectedQuestions.size() + ")");
-        reviewListLayout.add(header);
+        // --- Questions section ---
+        H3 questionsHeader = new H3("Review Questions (" + selectedQuestions.size() + ")");
+        reviewListLayout.add(questionsHeader);
 
         for (int i = 0; i < selectedQuestions.size(); i++) {
             Question q = selectedQuestions.get(i);
             int idx = i;
-            Div card = buildReviewCard(idx + 1, q, () -> {
-                selectedQuestions.remove(idx);
-                renderReviewList();
-            });
-            reviewListLayout.add(card);
+            reviewListLayout.add(buildReviewCard(idx, selectedQuestions, q, true));
         }
 
-        // Add question button
-        Button addButton = new Button("Add Question", new Icon(VaadinIcon.PLUS));
-        addButton.addClassName("option-button");
-        addButton.addClickListener(e -> openAddQuestionDialog());
-        reviewListLayout.add(addButton);
+        Button addQuestionButton = new Button("Add Question", new Icon(VaadinIcon.PLUS));
+        addQuestionButton.addClassName("option-button");
+        addQuestionButton.addClickListener(e -> openAddQuestionDialog());
+        reviewListLayout.add(addQuestionButton);
 
-        // Summary
+        // --- Coding Tasks section ---
+        if (!selectedCodingTasks.isEmpty()) {
+            H3 codingHeader = new H3("Coding Tasks (" + selectedCodingTasks.size() + ")");
+            codingHeader.getStyle().set("margin-top", "20px");
+            reviewListLayout.add(codingHeader);
+
+            for (int i = 0; i < selectedCodingTasks.size(); i++) {
+                CodingTask ct = selectedCodingTasks.get(i);
+                int idx = i;
+                reviewListLayout.add(buildCodingTaskReviewCard(idx, ct));
+            }
+        }
+
+        // --- Summary ---
         Div summary = new Div();
         summary.getStyle()
                 .set("margin-top", "16px")
@@ -313,14 +353,18 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
 
         Map<Integer, Long> byDifficulty = selectedQuestions.stream()
                 .collect(Collectors.groupingBy(Question::getDifficulty, Collectors.counting()));
-        StringBuilder sb = new StringBuilder("Total: " + selectedQuestions.size() + " questions — ");
+        StringBuilder sb = new StringBuilder("Total: " + selectedQuestions.size() + " questions");
+        if (!selectedCodingTasks.isEmpty()) {
+            sb.append(" + ").append(selectedCodingTasks.size()).append(" coding tasks");
+        }
+        sb.append(" — ");
         byDifficulty.entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .forEach(e -> sb.append("L").append(e.getKey()).append(": ").append(e.getValue()).append("  "));
         summary.add(new Span(sb.toString()));
         reviewListLayout.add(summary);
     }
 
-    private Div buildReviewCard(int number, Question question, Runnable onRemove) {
+    private Div buildReviewCard(int idx, List<?> list, Question question, boolean isQuestion) {
         Div card = new Div();
         card.getStyle()
                 .set("width", "100%")
@@ -334,7 +378,30 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         headerRow.setWidthFull();
         headerRow.setAlignItems(FlexComponent.Alignment.CENTER);
 
-        Span numberBadge = new Span("#" + number);
+        // Reorder buttons
+        HorizontalLayout reorderButtons = new HorizontalLayout();
+        reorderButtons.setSpacing(false);
+        reorderButtons.getStyle().set("gap", "2px");
+
+        Button upBtn = new Button(new Icon(VaadinIcon.ARROW_UP));
+        upBtn.getStyle().set("min-width", "28px").set("padding", "2px").set("cursor", "pointer");
+        upBtn.setVisible(idx > 0);
+        upBtn.addClickListener(e -> {
+            Collections.swap(selectedQuestions, idx, idx - 1);
+            renderReviewList();
+        });
+
+        Button downBtn = new Button(new Icon(VaadinIcon.ARROW_DOWN));
+        downBtn.getStyle().set("min-width", "28px").set("padding", "2px").set("cursor", "pointer");
+        downBtn.setVisible(idx < selectedQuestions.size() - 1);
+        downBtn.addClickListener(e -> {
+            Collections.swap(selectedQuestions, idx, idx + 1);
+            renderReviewList();
+        });
+
+        reorderButtons.add(upBtn, downBtn);
+
+        Span numberBadge = new Span("#" + (idx + 1));
         numberBadge.getStyle()
                 .set("font-weight", "700")
                 .set("min-width", "36px")
@@ -363,9 +430,12 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
 
         Button removeBtn = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
         removeBtn.getStyle().set("color", "#ef4444").set("cursor", "pointer");
-        removeBtn.addClickListener(e -> onRemove.run());
+        removeBtn.addClickListener(e -> {
+            selectedQuestions.remove(idx);
+            renderReviewList();
+        });
 
-        headerRow.add(numberBadge, name, diffBadge, tags, removeBtn);
+        headerRow.add(reorderButtons, numberBadge, name, diffBadge, tags);
 
         if (question.getMaxPoints() > 0) {
             Span points = new Span(String.format("%.0f pts", question.getMaxPoints()));
@@ -373,12 +443,12 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
                     .set("font-size", "0.8rem")
                     .set("color", "var(--bervan-text-tertiary, #64748b)")
                     .set("margin-left", "8px");
-            headerRow.addComponentAtIndex(headerRow.getComponentCount() - 1, points);
+            headerRow.add(points);
         }
 
+        headerRow.add(removeBtn);
         card.add(headerRow);
 
-        // Expandable answer
         if (question.getAnswerDetails() != null && !question.getAnswerDetails().isBlank()) {
             Div answerContent = new Div();
             answerContent.getElement().setProperty("innerHTML", question.getAnswerDetails());
@@ -392,6 +462,76 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             answerDetails.getStyle().set("margin-top", "6px");
             card.add(answerDetails);
         }
+
+        return card;
+    }
+
+    private Div buildCodingTaskReviewCard(int idx, CodingTask task) {
+        Div card = new Div();
+        card.getStyle()
+                .set("width", "100%")
+                .set("padding", "10px 16px")
+                .set("margin-bottom", "6px")
+                .set("border-radius", "8px")
+                .set("border", "1px solid var(--bervan-border-color, #334155)")
+                .set("background", "rgba(168, 85, 247, 0.05)");
+
+        HorizontalLayout headerRow = new HorizontalLayout();
+        headerRow.setWidthFull();
+        headerRow.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        HorizontalLayout reorderButtons = new HorizontalLayout();
+        reorderButtons.setSpacing(false);
+        reorderButtons.getStyle().set("gap", "2px");
+
+        Button upBtn = new Button(new Icon(VaadinIcon.ARROW_UP));
+        upBtn.getStyle().set("min-width", "28px").set("padding", "2px").set("cursor", "pointer");
+        upBtn.setVisible(idx > 0);
+        upBtn.addClickListener(e -> {
+            Collections.swap(selectedCodingTasks, idx, idx - 1);
+            renderReviewList();
+        });
+
+        Button downBtn = new Button(new Icon(VaadinIcon.ARROW_DOWN));
+        downBtn.getStyle().set("min-width", "28px").set("padding", "2px").set("cursor", "pointer");
+        downBtn.setVisible(idx < selectedCodingTasks.size() - 1);
+        downBtn.addClickListener(e -> {
+            Collections.swap(selectedCodingTasks, idx, idx + 1);
+            renderReviewList();
+        });
+
+        reorderButtons.add(upBtn, downBtn);
+
+        Span numberBadge = new Span("#" + (idx + 1));
+        numberBadge.getStyle()
+                .set("font-weight", "700")
+                .set("min-width", "36px")
+                .set("color", "#a855f7");
+
+        Span name = new Span(task.getName() != null ? task.getName() : "—");
+        name.getStyle()
+                .set("font-weight", "600")
+                .set("font-size", "1.05rem")
+                .set("flex-grow", "1");
+
+        Span badge = new Span("Coding Task");
+        badge.getStyle()
+                .set("padding", "2px 10px")
+                .set("border-radius", "9999px")
+                .set("font-size", "0.75rem")
+                .set("font-weight", "600")
+                .set("background", "#a855f722")
+                .set("color", "#a855f7");
+
+        Button removeBtn = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
+        removeBtn.getStyle().set("color", "#ef4444").set("cursor", "pointer");
+        removeBtn.addClickListener(e -> {
+            selectedCodingTasks.remove(idx);
+            renderReviewList();
+        });
+
+        headerRow.add(reorderButtons, numberBadge, name, badge, removeBtn);
+        card.add(headerRow);
 
         return card;
     }
@@ -460,11 +600,11 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         dialog.open();
     }
 
-    private List<Question> pickRandom(List<Question> pool, int amount, Random random) {
+    private <T> List<T> pickRandom(List<T> pool, int amount, Random random) {
         if (amount >= pool.size()) {
             return new ArrayList<>(pool);
         }
-        List<Question> shuffled = new ArrayList<>(pool);
+        List<T> shuffled = new ArrayList<>(pool);
         Collections.shuffle(shuffled, random);
         return shuffled.subList(0, amount);
     }

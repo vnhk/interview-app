@@ -42,6 +42,9 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
                 .setHeader("Level 4 %").setKey("difficulty4Percent").setResizable(true);
         grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(percentStr(questionConfig.getDifficulty5Percent()))))
                 .setHeader("Level 5 %").setKey("difficulty5Percent").setResizable(true);
+        grid.addColumn(new ComponentRenderer<>(questionConfig -> formatTextComponent(
+                        questionConfig.getCodingTasksAmount() != null ? String.valueOf(questionConfig.getCodingTasksAmount()) : "0")))
+                .setHeader("Coding Tasks").setKey("codingTasksAmount").setResizable(true);
         grid.getElement().getStyle().set("--lumo-size-m", 100 + "px");
 
         return grid;
@@ -81,6 +84,14 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
                 field = createPercentField("Level 5 %");
                 field.setValue(item.getDifficulty5Percent());
             }
+            case "codingTasksAmount" -> {
+                IntegerField integerField = new IntegerField("Coding Tasks");
+                integerField.setMin(0);
+                integerField.setMax(20);
+                field = integerField;
+                field.setWidth("100%");
+                field.setValue(item.getCodingTasksAmount());
+            }
             default -> throw new RuntimeException("Invalid column!");
         }
 
@@ -96,6 +107,7 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
                 case "difficulty3Percent" -> item.setDifficulty3Percent((Integer) field.getValue());
                 case "difficulty4Percent" -> item.setDifficulty4Percent((Integer) field.getValue());
                 case "difficulty5Percent" -> item.setDifficulty5Percent((Integer) field.getValue());
+                case "codingTasksAmount" -> item.setCodingTasksAmount((Integer) field.getValue());
             }
 
             grid.getDataProvider().refreshItem(item);
@@ -119,6 +131,11 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
         IntegerField difficulty3Percent = createPercentField("Level 3 %");
         IntegerField difficulty4Percent = createPercentField("Level 4 %");
         IntegerField difficulty5Percent = createPercentField("Level 5 %");
+
+        IntegerField codingTasksAmount = new IntegerField("Coding Tasks");
+        codingTasksAmount.setMin(0);
+        codingTasksAmount.setMax(20);
+        codingTasksAmount.setWidth("25%");
 
         Span sumInfo = new Span("Percentages should sum to 100%");
         sumInfo.getStyle().set("color", "var(--bervan-text-secondary, #94a3b8)").set("font-size", "0.85rem");
@@ -147,12 +164,13 @@ public abstract class AbstractQuestionConfigView extends AbstractBervanTableView
             newQuestionConfig.setDifficulty3Percent(p3);
             newQuestionConfig.setDifficulty4Percent(p4);
             newQuestionConfig.setDifficulty5Percent(p5);
+            newQuestionConfig.setCodingTasksAmount(codingTasksAmount.getValue() != null ? codingTasksAmount.getValue() : 0);
             data.add(newQuestionConfig);
             grid.setItems(data);
             service.save(data.stream().toList());
             dialog.close();
         });
-        dialogLayout.add(headerLayout, nameField, difficulty1Percent, difficulty2Percent, difficulty3Percent, difficulty4Percent, difficulty5Percent, sumInfo, saveButton);
+        dialogLayout.add(headerLayout, nameField, difficulty1Percent, difficulty2Percent, difficulty3Percent, difficulty4Percent, difficulty5Percent, codingTasksAmount, sumInfo, saveButton);
     }
 
     private IntegerField createPercentField(String label) {

@@ -58,3 +58,13 @@ columns:
     required: false
     min: 0
     max: 100
+
+  - field: codingTasksAmount
+    displayName: "Coding Tasks"
+    internalName: "codingTasksAmount"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 20

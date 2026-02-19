@@ -27,12 +27,17 @@ public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements Per
     private String secondaryTags;
     @Lob
     private String notes;
+    @Lob
+    private String planTemplate;
     private String status;
     private LocalDateTime modificationDate;
     private boolean deleted;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "session", fetch = FetchType.EAGER)
     private List<InterviewSessionQuestion> sessionQuestions = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "session", fetch = FetchType.EAGER)
+    private List<InterviewSessionCodingTask> sessionCodingTasks = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.EAGER)
     @HistoryCollection(historyClass = HistoryInterviewSession.class)
@@ -148,5 +153,21 @@ public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements Per
 
     public void setHistory(Set<HistoryInterviewSession> history) {
         this.history = history;
+    }
+
+    public String getPlanTemplate() {
+        return planTemplate;
+    }
+
+    public void setPlanTemplate(String planTemplate) {
+        this.planTemplate = planTemplate;
+    }
+
+    public List<InterviewSessionCodingTask> getSessionCodingTasks() {
+        return sessionCodingTasks;
+    }
+
+    public void setSessionCodingTasks(List<InterviewSessionCodingTask> sessionCodingTasks) {
+        this.sessionCodingTasks = sessionCodingTasks;
     }
 }

@@ -27,6 +27,8 @@ public class HistoryQuestionConfig extends BervanHistoryOwnedEntity<UUID> implem
     private Integer difficulty4Percent;
     @HistoryField
     private Integer difficulty5Percent;
+    @HistoryField
+    private Integer codingTasksAmount;
     private LocalDateTime updateDate;
     @Id
     private UUID id;
@@ -115,5 +117,13 @@ public class HistoryQuestionConfig extends BervanHistoryOwnedEntity<UUID> implem
 
     public void setDifficulty5Percent(Integer difficulty5Percent) {
         this.difficulty5Percent = difficulty5Percent;
+    }
+
+    public Integer getCodingTasksAmount() {
+        return codingTasksAmount;
+    }
+
+    public void setCodingTasksAmount(Integer codingTasksAmount) {
+        this.codingTasksAmount = codingTasksAmount;
     }
 }

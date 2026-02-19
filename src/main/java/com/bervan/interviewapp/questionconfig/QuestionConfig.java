@@ -25,6 +25,7 @@ public class QuestionConfig extends BervanOwnedBaseEntity<UUID> implements Persi
     private Integer difficulty3Percent;
     private Integer difficulty4Percent;
     private Integer difficulty5Percent;
+    private Integer codingTasksAmount;
     private LocalDateTime modificationDate;
     private boolean deleted;
     @Id
@@ -123,5 +124,13 @@ public class QuestionConfig extends BervanOwnedBaseEntity<UUID> implements Persi
 
     public void setDifficulty5Percent(Integer difficulty5Percent) {
         this.difficulty5Percent = difficulty5Percent;
+    }
+
+    public Integer getCodingTasksAmount() {
+        return codingTasksAmount;
+    }
+
+    public void setCodingTasksAmount(Integer codingTasksAmount) {
+        this.codingTasksAmount = codingTasksAmount;
     }
 }
