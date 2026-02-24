@@ -6,6 +6,7 @@ import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,8 +27,12 @@ public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements Per
     private String mainTags;
     private String secondaryTags;
     @Lob
+    @Size(max = 5000000)
+    @Column(columnDefinition = "LONGTEXT")
     private String notes;
     @Lob
+    @Size(max = 5000000)
+    @Column(columnDefinition = "LONGTEXT")
     private String planTemplate;
     private String status;
     private LocalDateTime modificationDate;
