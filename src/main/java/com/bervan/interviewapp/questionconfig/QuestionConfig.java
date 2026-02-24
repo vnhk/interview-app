@@ -31,7 +31,7 @@ public class QuestionConfig extends BervanOwnedBaseEntity<UUID> implements Persi
     @Id
     private UUID id;
 
-    @OneToMany(mappedBy = "questionConfig", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "questionConfig", fetch = FetchType.EAGER)
     @HistoryCollection(historyClass = HistoryQuestionConfig.class)
     private Set<HistoryQuestionConfig> history = new HashSet<>();
 

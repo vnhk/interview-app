@@ -32,11 +32,6 @@ public class QuestionConfigService extends BaseService<UUID, QuestionConfig> {
         return repository.save(questionConfig);
     }
 
-    @Override
-    public void delete(QuestionConfig item) {
-        repository.delete(item);
-    }
-
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<HistoryQuestionConfig> loadHistory() {
         return historyRepository.findAll();
