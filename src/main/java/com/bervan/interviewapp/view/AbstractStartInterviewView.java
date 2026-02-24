@@ -287,6 +287,8 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             }
         }
 
+        selectedQuestions.sort(Comparator.comparing(Question::getDifficulty));
+
         warningsDiv.removeAll();
         if (!warnings.isEmpty()) {
             warningsDiv.setVisible(true);
