@@ -17,12 +17,18 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,6 +41,9 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
     private InterviewSessionService sessionService;
 
     private InterviewSession session;
+    private ScheduledExecutorService autoSaveScheduler;
+    private volatile String currentNotesValue = "";
+    private final Runnable[] hideCurrentAnswer = {null};
 
     public AbstractInterviewSessionView() {
         pageLayout = new InterviewAppPageLayout(ROUTE_NAME);
@@ -43,6 +52,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
 
     @Override
     public void setParameter(BeforeEvent event, String parameter) {
+        stopAutoSave();
         getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
 
         if (parameter == null || parameter.isBlank()) {
@@ -70,6 +80,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
     }
 
     private void buildSessionContent() {
+        hideCurrentAnswer[0] = null;
         // --- Header ---
         HorizontalLayout headerRow = new HorizontalLayout();
         headerRow.setWidthFull();
@@ -102,9 +113,15 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         TextArea globalNotes = new TextArea("Interview Notes");
         globalNotes.setWidthFull();
         globalNotes.setHeight("120px");
-        globalNotes.setValue(session.getNotes() != null ? session.getNotes() : "");
+        currentNotesValue = session.getNotes() != null ? session.getNotes() : "";
+        globalNotes.setValue(currentNotesValue);
+        globalNotes.addValueChangeListener(e -> currentNotesValue = e.getValue());
 
         add(headerRow, infoRow, globalNotes);
+
+        if ("IN_PROGRESS".equals(session.getStatus())) {
+            startAutoSave();
+        }
 
         // --- Scripted content from plan template ---
         List<InterviewSessionQuestion> sortedQuestions = session.getSessionQuestions().stream()
@@ -155,6 +172,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         Button completeButton = new Button("Complete Interview", new Icon(VaadinIcon.FLAG_CHECKERED));
         completeButton.addClassName("option-button");
         completeButton.addClickListener(e -> {
+            stopAutoSave();
             session.setNotes(globalNotes.getValue());
             session.setStatus("COMPLETED");
             sessionService.save(session);
@@ -275,12 +293,32 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
                 .set("color", getDifficultyColor(question != null ? question.getDifficulty() : 0));
 
         headerRow.add(numberBadge, name, diffBadge);
+
+        if (question != null && question.getTags() != null && !question.getTags().isBlank()) {
+            Span tags = new Span(question.getTags());
+            tags.getStyle()
+                    .set("font-size", "0.78rem")
+                    .set("color", "var(--bervan-text-tertiary, #64748b)")
+                    .set("margin-left", "8px");
+            headerRow.add(tags);
+        }
+
+        if (question != null && question.getMaxPoints() > 0) {
+            Span maxPts = new Span("max " + String.format("%.0f", question.getMaxPoints()) + " pts");
+            maxPts.getStyle()
+                    .set("font-size", "0.78rem")
+                    .set("color", "var(--bervan-text-tertiary, #64748b)")
+                    .set("margin-left", "8px");
+            headerRow.add(maxPts);
+        }
+
         card.add(headerRow);
 
         if (question != null && question.getQuestionDetails() != null && !question.getQuestionDetails().isBlank()) {
             Div questionText = new Div();
-            questionText.getElement().setProperty("innerHTML", question.getQuestionDetails());
+            questionText.setText(question.getQuestionDetails());
             questionText.getStyle()
+                    .set("white-space", "pre-wrap")
                     .set("margin-top", "8px")
                     .set("padding", "8px 12px")
                     .set("border-left", "3px solid var(--bervan-border-color, #475569)")
@@ -290,16 +328,29 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
 
         if (question != null && question.getAnswerDetails() != null && !question.getAnswerDetails().isBlank()) {
             Div answerContent = new Div();
-            answerContent.getElement().setProperty("innerHTML", question.getAnswerDetails());
+            answerContent.setText(question.getAnswerDetails());
             answerContent.getStyle()
+                    .set("white-space", "pre-wrap")
+                    .set("display", "none")
+                    .set("margin-top", "8px")
                     .set("padding", "8px 12px")
                     .set("border-left", "3px solid #10b981")
                     .set("color", "var(--bervan-text-primary, #e2e8f0)");
+            card.add(answerContent);
 
-            Details answerDetails = new Details("Show Answer", answerContent);
-            answerDetails.setOpened(false);
-            answerDetails.getStyle().set("margin-top", "8px");
-            card.add(answerDetails);
+            Runnable[] myHide = {() -> answerContent.getStyle().set("display", "none")};
+            card.getStyle().set("cursor", "pointer");
+            card.addClickListener(e -> {
+                boolean isMyCardOpen = hideCurrentAnswer[0] == myHide[0];
+                if (hideCurrentAnswer[0] != null) {
+                    hideCurrentAnswer[0].run();
+                    hideCurrentAnswer[0] = null;
+                }
+                if (!isMyCardOpen) {
+                    answerContent.getStyle().remove("display");
+                    hideCurrentAnswer[0] = myHide[0];
+                }
+            });
         }
 
         // Answer status buttons
@@ -550,6 +601,41 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         }
 
         return summaryLayout;
+    }
+
+    private void startAutoSave() {
+        stopAutoSave();
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        autoSaveScheduler = Executors.newSingleThreadScheduledExecutor();
+        autoSaveScheduler.scheduleAtFixedRate(() -> {
+            SecurityContext previous = SecurityContextHolder.getContext();
+            ClassLoader previousCl = Thread.currentThread().getContextClassLoader();
+            try {
+                SecurityContextHolder.setContext(securityContext);
+                Thread.currentThread().setContextClassLoader(classLoader);
+                session.setNotes(currentNotesValue);
+                sessionService.save(session);
+            } catch (Exception ex) {
+                // silently ignore auto-save errors
+            } finally {
+                SecurityContextHolder.setContext(previous);
+                Thread.currentThread().setContextClassLoader(previousCl);
+            }
+        }, 2, 2, TimeUnit.MINUTES);
+    }
+
+    private void stopAutoSave() {
+        if (autoSaveScheduler != null && !autoSaveScheduler.isShutdown()) {
+            autoSaveScheduler.shutdown();
+            autoSaveScheduler = null;
+        }
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+        stopAutoSave();
     }
 
     private String getCardBackground(String answerStatus) {
