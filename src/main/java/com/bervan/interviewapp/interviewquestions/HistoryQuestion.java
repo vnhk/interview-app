@@ -7,6 +7,7 @@ import com.bervan.history.model.HistoryOwnerEntity;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,9 +28,13 @@ public class HistoryQuestion extends BervanHistoryOwnedEntity<UUID> implements P
     private Integer difficulty;
     @HistoryField
     @Lob
+    @Size(max = 5000)
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String questionDetails;
     @HistoryField
     @Lob
+    @Size(max = 5000)
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String answerDetails;
     @HistoryField
     private Double maxPoints;

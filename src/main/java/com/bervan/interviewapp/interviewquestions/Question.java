@@ -8,6 +8,7 @@ import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -26,8 +27,12 @@ public class Question extends BervanOwnedBaseEntity<UUID> implements Persistable
     @Max(5)
     private Integer difficulty;
     @Lob
+    @Size(max = 5000)
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String questionDetails;
     @Lob
+    @Size(max = 5000)
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String answerDetails;
     private Double maxPoints;
     private LocalDateTime modificationDate;
