@@ -43,11 +43,21 @@ public class InterviewSessionService extends BaseService<UUID, InterviewSession>
 
     /**
      * Saves session and all its questions through the history mechanism.
-     * Questions are saved first (as detached entities) so their history is correctly
-     * captured before the session's cascade merge overwrites them.
+     * Pre-loads the session entity into the JPA 1st-level cache so that
+     * HistoryService can access it as the actual class (not a Hibernate lazy proxy).
+     * Without this, saving questions first causes the session to be cached as a proxy
+     * (via the LAZY InterviewSessionQuestion.session association), and
+     * proxy.getClass().getDeclaredField("candidateName") throws NoSuchFieldException.
      */
     @Transactional
     public void saveWithHistory(InterviewSession detachedSession) {
+        // Pre-load session as the actual entity (not a lazy proxy) into the 1st-level cache.
+        // This also eagerly loads sessionQuestions with their OLD DB state for correct history.
+        Optional<InterviewSession> managedSession = repository.findById(detachedSession.getId());
+        if (managedSession.isEmpty()) {
+            return;
+        }
+
         if (detachedSession.getSessionQuestions() != null) {
             for (InterviewSessionQuestion q : detachedSession.getSessionQuestions()) {
                 questionRepository.save(q);
