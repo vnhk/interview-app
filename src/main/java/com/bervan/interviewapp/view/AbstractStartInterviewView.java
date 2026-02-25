@@ -578,6 +578,7 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
                 Button addBtn = new Button("Add", new Icon(VaadinIcon.PLUS));
                 addBtn.addClickListener(ev -> {
                     selectedQuestions.add(q);
+                    selectedQuestions.sort(Comparator.comparing(Question::getDifficulty));
                     usedIds.add(q.getId());
                     dialog.close();
                     renderReviewList();

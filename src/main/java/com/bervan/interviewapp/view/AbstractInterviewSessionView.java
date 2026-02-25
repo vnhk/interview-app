@@ -552,12 +552,16 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         summaryTitle.getStyle().set("margin", "0 0 12px 0");
         summaryLayout.add(summaryTitle);
 
-        // Total score (questions)
-        double totalScore = questions.stream()
+        // Total score (questions) — exclude NOT_ASKED
+        List<InterviewSessionQuestion> askedQuestions = questions.stream()
+                .filter(q -> !"NOT_ASKED".equals(q.getAnswerStatus()))
+                .collect(Collectors.toList());
+
+        double totalScore = askedQuestions.stream()
                 .filter(q -> q.getScore() != null)
                 .mapToDouble(InterviewSessionQuestion::getScore)
                 .sum();
-        double maxScore = questions.stream()
+        double maxScore = askedQuestions.stream()
                 .filter(q -> q.getQuestion() != null)
                 .mapToDouble(q -> q.getQuestion().getMaxPoints())
                 .sum();
@@ -586,8 +590,8 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         byStatus.forEach((status, count) -> statusSb.append(status.replace("_", " ")).append(": ").append(count).append("  "));
         summaryLayout.add(new Span(statusSb.toString()));
 
-        // By difficulty
-        Map<Integer, List<InterviewSessionQuestion>> byDifficulty = questions.stream()
+        // By difficulty (only asked questions)
+        Map<Integer, List<InterviewSessionQuestion>> byDifficulty = askedQuestions.stream()
                 .filter(q -> q.getQuestion() != null)
                 .collect(Collectors.groupingBy(q -> q.getQuestion().getDifficulty()));
 
