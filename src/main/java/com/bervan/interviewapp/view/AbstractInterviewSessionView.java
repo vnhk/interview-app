@@ -165,7 +165,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         saveButton.addClassName("option-button");
         saveButton.addClickListener(e -> {
             session.setNotes(globalNotes.getValue());
-            sessionService.save(session);
+            sessionService.saveWithHistory(session);
             showSuccessNotification("Session saved.");
         });
 
@@ -175,7 +175,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             stopAutoSave();
             session.setNotes(globalNotes.getValue());
             session.setStatus("COMPLETED");
-            sessionService.save(session);
+            sessionService.saveWithHistory(session);
             showSuccessNotification("Interview completed!");
             getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
             buildSessionContent();
@@ -611,15 +611,18 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         stopAutoSave();
         SecurityContext securityContext = SecurityContextHolder.getContext();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        final UUID sessionId = session.getId();
         autoSaveScheduler = Executors.newSingleThreadScheduledExecutor();
         autoSaveScheduler.scheduleAtFixedRate(() -> {
+            final String notesToSave = currentNotesValue;
             SecurityContext previous = SecurityContextHolder.getContext();
             ClassLoader previousCl = Thread.currentThread().getContextClassLoader();
             try {
                 SecurityContextHolder.setContext(securityContext);
                 Thread.currentThread().setContextClassLoader(classLoader);
-                session.setNotes(currentNotesValue);
-                sessionService.save(session);
+                // autoSave: checks IN_PROGRESS in DB (ghost scheduler protection),
+                // then saves questions + session through history mechanism.
+                sessionService.autoSave(sessionId, notesToSave, session);
             } catch (Exception ex) {
                 // silently ignore auto-save errors
             } finally {
@@ -630,8 +633,8 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
     }
 
     private void stopAutoSave() {
-        if (autoSaveScheduler != null && !autoSaveScheduler.isShutdown()) {
-            autoSaveScheduler.shutdown();
+        if (autoSaveScheduler != null) {
+            autoSaveScheduler.shutdownNow();
             autoSaveScheduler = null;
         }
     }

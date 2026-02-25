@@ -2,20 +2,32 @@ package com.bervan.interviewapp.session;
 
 import com.bervan.common.model.BervanOwnedBaseEntity;
 import com.bervan.common.model.PersistableTableOwnedData;
+import com.bervan.history.model.HistoryCollection;
+import com.bervan.history.model.HistorySupported;
 import com.bervan.interviewapp.interviewquestions.Question;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@HistorySupported
 public class InterviewSessionQuestion extends BervanOwnedBaseEntity<UUID> implements PersistableTableOwnedData<UUID> {
     @Id
     private UUID id;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "interviewSessionQuestion")
+    @HistoryCollection(historyClass = HistoryInterviewSessionQuestion.class)
+    private Set<HistoryInterviewSessionQuestion> history = new HashSet<>();
     private Integer questionNumber;
     private Double score;
     @Lob
+    @Size(max = 5000)
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String notes;
     private String answerStatus;
     private LocalDateTime modificationDate;
@@ -115,5 +127,13 @@ public class InterviewSessionQuestion extends BervanOwnedBaseEntity<UUID> implem
 
     public void setQuestion(Question question) {
         this.question = question;
+    }
+
+    public Set<HistoryInterviewSessionQuestion> getHistory() {
+        return history;
+    }
+
+    public void setHistory(Set<HistoryInterviewSessionQuestion> history) {
+        this.history = history;
     }
 }
