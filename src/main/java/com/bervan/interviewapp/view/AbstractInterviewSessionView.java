@@ -404,12 +404,25 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             statusRow.add(btn);
         }
 
+        double maxPoints = question != null ? question.getMaxPoints() : 10;
+        if (sq.getScore() == null) sq.setScore(0.0);
         NumberField scoreField = new NumberField("Score");
         scoreField.setWidth("80px");
         scoreField.setMin(0);
-        scoreField.setMax(question != null ? question.getMaxPoints() : 10);
-        scoreField.setValue(sq.getScore() != null ? sq.getScore() : 0.0);
-        scoreField.addValueChangeListener(e -> sq.setScore(e.getValue()));
+        scoreField.setMax(maxPoints);
+        scoreField.setValue(sq.getScore());
+        scoreField.addValueChangeListener(e -> {
+            double val = e.getValue() != null ? e.getValue() : 0.0;
+            if (val > maxPoints) {
+                scoreField.setValue(maxPoints);
+                sq.setScore(maxPoints);
+            } else if (val < 0) {
+                scoreField.setValue(0.0);
+                sq.setScore(0.0);
+            } else {
+                sq.setScore(val);
+            }
+        });
 
         statusRow.add(scoreField);
         card.add(statusRow);
@@ -521,11 +534,12 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         }
 
         // Score
+        if (sct.getScore() == null) sct.setScore(0.0);
         NumberField scoreField = new NumberField("Score");
         scoreField.setWidth("80px");
         scoreField.setMin(0);
-        scoreField.setValue(sct.getScore() != null ? sct.getScore() : 0.0);
-        scoreField.addValueChangeListener(e -> sct.setScore(e.getValue()));
+        scoreField.setValue(sct.getScore());
+        scoreField.addValueChangeListener(e -> sct.setScore(e.getValue() != null ? e.getValue() : 0.0));
         scoreField.getStyle().set("margin-top", "8px");
         card.add(scoreField);
 
