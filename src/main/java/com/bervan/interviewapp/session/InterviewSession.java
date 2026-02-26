@@ -34,6 +34,10 @@ public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements Per
     @Size(max = 5000000)
     @Column(columnDefinition = "LONGTEXT")
     private String planTemplate;
+    @Lob
+    @Size(max = 500000)
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String feedback;
     private String status;
     private LocalDateTime modificationDate;
     private boolean deleted;
@@ -166,6 +170,14 @@ public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements Per
 
     public void setPlanTemplate(String planTemplate) {
         this.planTemplate = planTemplate;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
     }
 
     public List<InterviewSessionCodingTask> getSessionCodingTasks() {

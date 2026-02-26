@@ -25,6 +25,11 @@ public class HistoryInterviewSession extends BervanHistoryOwnedEntity<UUID> impl
     @Size(max = 5000000)
     @Column(columnDefinition = "LONGTEXT")
     private String notes;
+    @HistoryField
+    @Lob
+    @Size(max = 500000)
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String feedback;
     private LocalDateTime updateDate;
     @Id
     private UUID id;
@@ -67,6 +72,14 @@ public class HistoryInterviewSession extends BervanHistoryOwnedEntity<UUID> impl
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
     }
 
     @Override

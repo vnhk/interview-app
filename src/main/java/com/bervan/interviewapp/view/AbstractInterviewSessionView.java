@@ -162,7 +162,7 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         HorizontalLayout actions = new HorizontalLayout();
         actions.setAlignItems(FlexComponent.Alignment.CENTER);
 
-        Button saveButton = new Button("Save Progress", new Icon(VaadinIcon.CHECK));
+        Button saveButton = new Button("Save", new Icon(VaadinIcon.CHECK));
         saveButton.addClassName("option-button");
         saveButton.addClickListener(e -> {
             session.setNotes(globalNotes.getValue());
@@ -170,23 +170,42 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             showSuccessNotification("Session saved.");
         });
 
-        Button completeButton = new Button("Complete Interview", new Icon(VaadinIcon.FLAG_CHECKERED));
-        completeButton.addClassName("option-button");
-        completeButton.addClickListener(e -> {
-            stopAutoSave();
-            session.setNotes(globalNotes.getValue());
-            session.setStatus("COMPLETED");
-            sessionService.saveWithHistory(session);
-            showSuccessNotification("Interview completed!");
-            getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
-            buildSessionContent();
-        });
+        if ("IN_PROGRESS".equals(session.getStatus())) {
+            Button completeButton = new Button("Complete Interview", new Icon(VaadinIcon.FLAG_CHECKERED));
+            completeButton.addClassName("option-button");
+            completeButton.addClickListener(e -> {
+                stopAutoSave();
+                session.setNotes(globalNotes.getValue());
+                session.setStatus("COMPLETED");
+                sessionService.saveWithHistory(session);
+                showSuccessNotification("Interview completed!");
+                getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
+                buildSessionContent();
+            });
+            actions.add(saveButton, completeButton);
+        } else {
+            Button aiPromptButton = new Button("Generate AI Evaluation Prompt", new Icon(VaadinIcon.MAGIC));
+            aiPromptButton.addClassName("option-button");
+            aiPromptButton.addClickListener(e -> showAiPromptDialog(sortedQuestions));
+            actions.add(saveButton, aiPromptButton);
+        }
 
-        actions.add(saveButton, completeButton);
         add(actions);
 
         if ("COMPLETED".equals(session.getStatus())) {
             add(buildSummary(sortedQuestions, sortedCodingTasks));
+
+            H3 feedbackTitle = new H3("Feedback");
+            feedbackTitle.getStyle().set("margin-top", "16px").set("margin-bottom", "4px");
+
+            TextArea feedbackArea = new TextArea();
+            feedbackArea.setWidthFull();
+            feedbackArea.setHeight("150px");
+            feedbackArea.setPlaceholder("Enter feedback, recommendations or evaluation notes...");
+            feedbackArea.setValue(session.getFeedback() != null ? session.getFeedback() : "");
+            feedbackArea.addValueChangeListener(e -> session.setFeedback(e.getValue()));
+
+            add(feedbackTitle, feedbackArea);
         }
     }
 
@@ -622,12 +641,6 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             summaryLayout.add(new Span(String.format("Level %d: %.1f / %.1f (%d questions)",
                     diff, diffScore, diffMax, qs.size())));
         }
-
-        Button aiPromptButton = new Button("Generate AI Evaluation Prompt");
-        aiPromptButton.addClassName("option-button");
-        aiPromptButton.getStyle().set("margin-top", "16px");
-        aiPromptButton.addClickListener(e -> showAiPromptDialog(questions));
-        summaryLayout.add(aiPromptButton);
 
         return summaryLayout;
     }
