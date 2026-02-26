@@ -9,6 +9,7 @@ import com.bervan.interviewapp.session.InterviewSessionQuestion;
 import com.bervan.interviewapp.session.InterviewSessionService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -420,6 +421,10 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
         notesField.addValueChangeListener(e -> sq.setNotes(e.getValue()));
         card.add(notesField);
 
+        // Prevent clicks on interactive controls from bubbling up to the card's show/hide listener
+        statusRow.getElement().executeJs("this.addEventListener('click', e => e.stopPropagation())");
+        notesField.getElement().executeJs("this.addEventListener('click', e => e.stopPropagation())");
+
         return card;
     }
 
@@ -604,7 +609,78 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
                     diff, diffScore, diffMax, qs.size())));
         }
 
+        Button aiPromptButton = new Button("Generate AI Evaluation Prompt");
+        aiPromptButton.addClassName("option-button");
+        aiPromptButton.getStyle().set("margin-top", "16px");
+        aiPromptButton.addClickListener(e -> showAiPromptDialog(questions));
+        summaryLayout.add(aiPromptButton);
+
         return summaryLayout;
+    }
+
+    private void showAiPromptDialog(List<InterviewSessionQuestion> allQuestions) {
+        List<InterviewSessionQuestion> relevant = allQuestions.stream()
+                .filter(q -> !"NOT_ASKED".equals(q.getAnswerStatus())
+                        || (q.getNotes() != null && !q.getNotes().isBlank()))
+                .sorted(Comparator.comparing(InterviewSessionQuestion::getQuestionNumber))
+                .collect(Collectors.toList());
+
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Please prepare a detailed evaluation of the candidate's technical skills based on the interview data provided below.\n\n");
+        prompt.append("For each skill area listed in Main Skills and Secondary Skills, write a separate evaluation paragraph.\n");
+        prompt.append("Take into account the candidate's score, answer quality, and any additional notes.\n");
+        prompt.append("Consider the typical experience requirements for the role based on the skill areas.\n");
+        prompt.append("At the end, provide a short overall summary and a clear recommendation on whether the candidate should be selected.\n\n");
+        prompt.append("---\n\n");
+
+        prompt.append("MAIN SKILLS: ").append(session.getMainTags() != null ? session.getMainTags() : "—").append("\n");
+        prompt.append("SECONDARY SKILLS: ").append(session.getSecondaryTags() != null ? session.getSecondaryTags() : "—").append("\n\n");
+
+        String interviewNotes = session.getNotes() != null ? session.getNotes().trim() : "";
+        if (!interviewNotes.isBlank()) {
+            prompt.append("INTERVIEW NOTES:\n").append(interviewNotes).append("\n\n");
+        }
+
+        prompt.append("QUESTIONS & ANSWERS:\n\n");
+
+        for (InterviewSessionQuestion sq : relevant) {
+            var q = sq.getQuestion();
+            String qName = q != null && q.getName() != null ? q.getName() : "—";
+            String status = sq.getAnswerStatus() != null ? sq.getAnswerStatus() : "NOT_ASKED";
+            String score = sq.getScore() != null
+                    ? sq.getScore() + " / " + (q != null ? q.getMaxPoints() : "?")
+                    : "not scored";
+
+            prompt.append("Question: ").append(qName).append("\n");
+            prompt.append("Status: ").append(status).append("\n");
+            prompt.append("Score: ").append(score).append("\n");
+
+            if (sq.getNotes() != null && !sq.getNotes().isBlank()) {
+                prompt.append("Interviewer Notes: ").append(sq.getNotes().trim()).append("\n");
+            }
+            prompt.append("\n");
+        }
+
+        Dialog dialog = new Dialog();
+        dialog.setWidth("800px");
+        dialog.setHeight("600px");
+
+        TextArea promptArea = new TextArea();
+        promptArea.setValue(prompt.toString());
+        promptArea.setWidthFull();
+        promptArea.setHeight("480px");
+        promptArea.setReadOnly(true);
+
+        Button closeButton = new Button("Close", ev -> dialog.close());
+        closeButton.addClassName("option-button");
+
+        VerticalLayout content = new VerticalLayout();
+        content.add(new H3("AI Evaluation Prompt"), promptArea, closeButton);
+        content.setPadding(false);
+        content.setSpacing(true);
+
+        dialog.add(content);
+        dialog.open();
     }
 
     private void startAutoSave() {
