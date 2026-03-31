@@ -15,7 +15,6 @@ import com.bervan.interviewapp.session.InterviewSessionQuestion;
 import com.bervan.interviewapp.session.InterviewSessionService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.*;
@@ -51,7 +50,10 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
 
     private final List<Question> selectedQuestions = new ArrayList<>();
     private final List<CodingTask> selectedCodingTasks = new ArrayList<>();
+    private final List<SkillEntryRow> skillEntryRows = new ArrayList<>();
+
     private VerticalLayout reviewListLayout;
+    private VerticalLayout skillEntriesLayout;
     private Div warningsDiv;
     private Button startSessionButton;
 
@@ -68,8 +70,8 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
 
     private void buildContent() {
         getChildren().filter(c -> c != pageLayout).toList().forEach(this::remove);
+        skillEntryRows.clear();
 
-        // --- Controls ---
         ComboBox<QuestionConfig> configCombo = new ComboBox<>("Interview Config");
         List<QuestionConfig> configs = questionConfigService.load(PageRequest.of(0, 10000)).stream()
                 .map(e -> (QuestionConfig) e)
@@ -81,30 +83,45 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         TextField candidateNameField = new TextField("Candidate Name");
         candidateNameField.setWidth("250px");
 
-        IntegerField totalQuestionsField = new IntegerField("Total Questions");
-        totalQuestionsField.setMin(1);
-        totalQuestionsField.setMax(200);
-        totalQuestionsField.setValue(20);
-        totalQuestionsField.setWidth("150px");
+        HorizontalLayout row1 = new HorizontalLayout(configCombo, candidateNameField);
+        row1.setAlignItems(FlexComponent.Alignment.END);
 
+        // --- Skill configuration ---
         Set<String> allTags = questionService.getAllDistinctTags();
 
-        MultiSelectComboBox<String> mainTagsCombo = new MultiSelectComboBox<>("Main Tags (1-3)");
-        mainTagsCombo.setItems(allTags);
-        mainTagsCombo.setWidth("300px");
+        H4 skillsTitle = new H4("Skill Configuration");
+        skillsTitle.getStyle().set("margin", "16px 0 4px 0");
 
-        MultiSelectComboBox<String> secondaryTagsCombo = new MultiSelectComboBox<>("Secondary Tags (1-5)");
-        secondaryTagsCombo.setItems(allTags);
-        secondaryTagsCombo.setWidth("300px");
+        HorizontalLayout columnLabels = new HorizontalLayout(
+                headerLabel("Tag", "200px"),
+                headerLabel("Level", "130px"),
+                headerLabel("Questions", "110px")
+        );
+        columnLabels.setSpacing(true);
+        columnLabels.getStyle()
+                .set("padding-left", "4px")
+                .set("color", "var(--bervan-text-secondary, #94a3b8)")
+                .set("font-size", "0.8rem")
+                .set("font-weight", "600")
+                .set("text-transform", "uppercase");
+
+        skillEntriesLayout = new VerticalLayout();
+        skillEntriesLayout.setPadding(false);
+        skillEntriesLayout.setSpacing(false);
+        skillEntriesLayout.getStyle().set("gap", "6px");
+
+        addSkillEntryRow(allTags);
+
+        Button addSkillButton = new Button("+ Add Skill", new Icon(VaadinIcon.PLUS));
+        addSkillButton.addClassName("option-button");
+        addSkillButton.addClickListener(e -> addSkillEntryRow(allTags));
 
         Button generateButton = new Button("Generate Questions", new Icon(VaadinIcon.MAGIC));
         generateButton.addClassName("option-button");
 
-        HorizontalLayout row1 = new HorizontalLayout(configCombo, candidateNameField, totalQuestionsField);
-        row1.setAlignItems(FlexComponent.Alignment.END);
-
-        HorizontalLayout row2 = new HorizontalLayout(mainTagsCombo, secondaryTagsCombo, generateButton);
-        row2.setAlignItems(FlexComponent.Alignment.END);
+        HorizontalLayout skillsActions = new HorizontalLayout(addSkillButton, generateButton);
+        skillsActions.setAlignItems(FlexComponent.Alignment.CENTER);
+        skillsActions.getStyle().set("margin-top", "8px");
 
         warningsDiv = new Div();
         warningsDiv.setWidthFull();
@@ -125,25 +142,17 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
                 showWarningNotification("Please select an interview config.");
                 return;
             }
-            Set<String> mainTags = mainTagsCombo.getValue();
-            Set<String> secondaryTags = secondaryTagsCombo.getValue();
 
-            if (mainTags.isEmpty()) {
-                showWarningNotification("Please select at least 1 main tag.");
-                return;
-            }
-            if (mainTags.size() > 3) {
-                showWarningNotification("Select at most 3 main tags.");
-                return;
-            }
-            if (secondaryTags.size() > 5) {
-                showWarningNotification("Select at most 5 secondary tags.");
+            List<SkillEntryRow> validRows = skillEntryRows.stream()
+                    .filter(SkillEntryRow::isValid)
+                    .collect(Collectors.toList());
+
+            if (validRows.isEmpty()) {
+                showWarningNotification("Please configure at least one skill with a tag, level, and question count.");
                 return;
             }
 
-            int totalQuestions = totalQuestionsField.getValue() != null ? totalQuestionsField.getValue() : 20;
-
-            generateQuestionList(config, new ArrayList<>(mainTags), new ArrayList<>(secondaryTags), totalQuestions);
+            generateQuestionListBySkillLevel(validRows);
             generateCodingTaskList(config);
             renderReviewList();
         });
@@ -160,10 +169,19 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             }
 
             QuestionConfig config = configCombo.getValue();
-            Set<String> mainTags = mainTagsCombo.getValue();
-            Set<String> secondaryTags = secondaryTagsCombo.getValue();
+            List<SkillEntryRow> validRows = skillEntryRows.stream()
+                    .filter(SkillEntryRow::isValid)
+                    .collect(Collectors.toList());
 
-            // Load plan template
+            String skillLevelConfig = validRows.stream()
+                    .map(SkillEntryRow::serialize)
+                    .collect(Collectors.joining("|"));
+
+            String allTagsStr = validRows.stream()
+                    .map(SkillEntryRow::getTag)
+                    .distinct()
+                    .collect(Collectors.joining(", "));
+
             String planTemplate = "";
             List<? extends BaseOneValue> planValues = oneValueService.loadByKey("interview-plan");
             if (!planValues.isEmpty() && planValues.get(0).getContent() != null) {
@@ -175,8 +193,9 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             session.setCandidateName(candidateName);
             session.setConfigName(config != null ? config.getName() : "");
             session.setTotalQuestions(selectedQuestions.size());
-            session.setMainTags(String.join(", ", mainTags));
-            session.setSecondaryTags(String.join(", ", secondaryTags));
+            session.setMainTags(allTagsStr);
+            session.setSecondaryTags("");
+            session.setSkillLevelConfig(skillLevelConfig);
             session.setStatus("IN_PROGRESS");
             session.setNotes("");
             session.setPlanTemplate(planTemplate);
@@ -210,7 +229,19 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
                     AbstractInterviewSessionView.ROUTE_NAME + "/" + session.getId().toString()));
         });
 
-        add(row1, row2, warningsDiv, reviewListLayout, startSessionButton);
+        add(row1, skillsTitle, columnLabels, skillEntriesLayout, skillsActions, warningsDiv, reviewListLayout, startSessionButton);
+    }
+
+    private void addSkillEntryRow(Set<String> allTags) {
+        SkillEntryRow row = new SkillEntryRow(allTags);
+        skillEntryRows.add(row);
+        skillEntriesLayout.add(row.layout);
+    }
+
+    private Span headerLabel(String text, String width) {
+        Span s = new Span(text);
+        s.getStyle().set("width", width).set("min-width", width).set("display", "inline-block");
+        return s;
     }
 
     private void generateCodingTaskList(QuestionConfig config) {
@@ -225,65 +256,32 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         selectedCodingTasks.addAll(pickRandom(allTasks, amount, new Random()));
     }
 
-    private void generateQuestionList(QuestionConfig config, List<String> mainTags, List<String> secondaryTags, int totalQuestions) {
+    private void generateQuestionListBySkillLevel(List<SkillEntryRow> skillRows) {
         selectedQuestions.clear();
         List<String> warnings = new ArrayList<>();
-
-        int mainCount = (int) Math.ceil(totalQuestions * 0.6);
-        int secondaryCount = totalQuestions - mainCount;
-
-        if (secondaryTags.isEmpty()) {
-            mainCount = totalQuestions;
-            secondaryCount = 0;
-        }
-
-        Map<Integer, Integer> diffPercents = new LinkedHashMap<>();
-        diffPercents.put(1, config.getDifficulty1Percent() != null ? config.getDifficulty1Percent() : 0);
-        diffPercents.put(2, config.getDifficulty2Percent() != null ? config.getDifficulty2Percent() : 0);
-        diffPercents.put(3, config.getDifficulty3Percent() != null ? config.getDifficulty3Percent() : 0);
-        diffPercents.put(4, config.getDifficulty4Percent() != null ? config.getDifficulty4Percent() : 0);
-        diffPercents.put(5, config.getDifficulty5Percent() != null ? config.getDifficulty5Percent() : 0);
-
         Random random = new Random();
         Set<UUID> usedIds = new HashSet<>();
 
-        for (Map.Entry<Integer, Integer> entry : diffPercents.entrySet()) {
-            int difficulty = entry.getKey();
-            int percent = entry.getValue();
-            if (percent <= 0) continue;
+        for (SkillEntryRow row : skillRows) {
+            String tag = row.getTag();
+            SkillLevel level = row.getLevel();
+            int needed = row.getCount();
 
-            int needed = (int) Math.ceil(mainCount * percent / 100.0);
-            List<Question> pool = questionService.findByTagsAndDifficulty(mainTags, difficulty)
-                    .stream().filter(q -> !usedIds.contains(q.getId())).collect(Collectors.toList());
+            List<Question> pool = new ArrayList<>();
+            for (int difficulty : level.getDifficultyRange()) {
+                questionService.findByTagsAndDifficulty(List.of(tag), difficulty)
+                        .stream()
+                        .filter(q -> !usedIds.contains(q.getId()))
+                        .forEach(pool::add);
+            }
 
             List<Question> picked = pickRandom(pool, needed, random);
             picked.forEach(q -> usedIds.add(q.getId()));
             selectedQuestions.addAll(picked);
 
             if (picked.size() < needed) {
-                warnings.add("Missing " + (needed - picked.size()) + " main-tag questions at level " + difficulty
-                        + " for tags: " + String.join(", ", mainTags));
-            }
-        }
-
-        if (secondaryCount > 0 && !secondaryTags.isEmpty()) {
-            for (Map.Entry<Integer, Integer> entry : diffPercents.entrySet()) {
-                int difficulty = entry.getKey();
-                int percent = entry.getValue();
-                if (percent <= 0) continue;
-
-                int needed = (int) Math.ceil(secondaryCount * percent / 100.0);
-                List<Question> pool = questionService.findByTagsAndDifficulty(secondaryTags, difficulty)
-                        .stream().filter(q -> !usedIds.contains(q.getId())).collect(Collectors.toList());
-
-                List<Question> picked = pickRandom(pool, needed, random);
-                picked.forEach(q -> usedIds.add(q.getId()));
-                selectedQuestions.addAll(picked);
-
-                if (picked.size() < needed) {
-                    warnings.add("Missing " + (needed - picked.size()) + " secondary-tag questions at level " + difficulty
-                            + " for tags: " + String.join(", ", secondaryTags));
-                }
+                warnings.add("Missing " + (needed - picked.size()) + " question(s) for "
+                        + tag + " / " + level + " (need " + needed + ", found " + pool.size() + ")");
             }
         }
 
@@ -317,14 +315,13 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         reviewListLayout.setVisible(true);
         startSessionButton.setVisible(true);
 
-        // --- Questions section ---
         H3 questionsHeader = new H3("Review Questions (" + selectedQuestions.size() + ")");
         reviewListLayout.add(questionsHeader);
 
         for (int i = 0; i < selectedQuestions.size(); i++) {
             Question q = selectedQuestions.get(i);
             int idx = i;
-            reviewListLayout.add(buildReviewCard(idx, selectedQuestions, q, true));
+            reviewListLayout.add(buildReviewCard(idx, q));
         }
 
         Button addQuestionButton = new Button("Add Question", new Icon(VaadinIcon.PLUS));
@@ -332,7 +329,6 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         addQuestionButton.addClickListener(e -> openAddQuestionDialog());
         reviewListLayout.add(addQuestionButton);
 
-        // --- Coding Tasks section ---
         if (!selectedCodingTasks.isEmpty()) {
             H3 codingHeader = new H3("Coding Tasks (" + selectedCodingTasks.size() + ")");
             codingHeader.getStyle().set("margin-top", "20px");
@@ -345,7 +341,6 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             }
         }
 
-        // --- Summary ---
         Div summary = new Div();
         summary.getStyle()
                 .set("margin-top", "16px")
@@ -366,7 +361,7 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         reviewListLayout.add(summary);
     }
 
-    private Div buildReviewCard(int idx, List<?> list, Question question, boolean isQuestion) {
+    private Div buildReviewCard(int idx, Question question) {
         Div card = new Div();
         card.getStyle()
                 .set("width", "100%")
@@ -380,7 +375,6 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
         headerRow.setWidthFull();
         headerRow.setAlignItems(FlexComponent.Alignment.CENTER);
 
-        // Reorder buttons
         HorizontalLayout reorderButtons = new HorizontalLayout();
         reorderButtons.setSpacing(false);
         reorderButtons.getStyle().set("gap", "2px");
@@ -621,5 +615,95 @@ public abstract class AbstractStartInterviewView extends AbstractPageView {
             case 5 -> "#ef4444";
             default -> "#64748b";
         };
+    }
+
+    // -------------------------------------------------------------------------
+    // Skill level model
+    // -------------------------------------------------------------------------
+
+    public enum SkillLevel {
+        JUNIOR("Junior", List.of(1, 2)),
+        MID("Mid", List.of(2, 3, 4)),
+        SENIOR("Senior", List.of(3, 4, 5)),
+        LEAD("Lead", List.of(4, 5));
+
+        private final String label;
+        private final List<Integer> difficultyRange;
+
+        SkillLevel(String label, List<Integer> difficultyRange) {
+            this.label = label;
+            this.difficultyRange = difficultyRange;
+        }
+
+        public List<Integer> getDifficultyRange() {
+            return difficultyRange;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
+    private class SkillEntryRow {
+        final ComboBox<String> tagCombo;
+        final ComboBox<SkillLevel> levelCombo;
+        final IntegerField countField;
+        final HorizontalLayout layout;
+
+        SkillEntryRow(Set<String> allTags) {
+            tagCombo = new ComboBox<>();
+            tagCombo.setPlaceholder("Tag");
+            tagCombo.setItems(allTags);
+            tagCombo.setWidth("200px");
+
+            levelCombo = new ComboBox<>();
+            levelCombo.setPlaceholder("Level");
+            levelCombo.setItems(SkillLevel.values());
+            levelCombo.setItemLabelGenerator(SkillLevel::toString);
+            levelCombo.setWidth("130px");
+
+            countField = new IntegerField();
+            countField.setPlaceholder("Count");
+            countField.setMin(1);
+            countField.setMax(50);
+            countField.setValue(5);
+            countField.setWidth("110px");
+
+            layout = new HorizontalLayout(tagCombo, levelCombo, countField);
+            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+            Button removeBtn = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
+            removeBtn.addClassName("bervan-icon-btn");
+            removeBtn.getStyle().set("color", "#ef4444");
+            removeBtn.addClickListener(e -> {
+                skillEntryRows.remove(this);
+                skillEntriesLayout.remove(layout);
+            });
+
+            layout.add(removeBtn);
+        }
+
+        boolean isValid() {
+            return tagCombo.getValue() != null && !tagCombo.getValue().isBlank()
+                    && levelCombo.getValue() != null
+                    && countField.getValue() != null && countField.getValue() > 0;
+        }
+
+        String getTag() {
+            return tagCombo.getValue();
+        }
+
+        SkillLevel getLevel() {
+            return levelCombo.getValue();
+        }
+
+        int getCount() {
+            return countField.getValue() != null ? countField.getValue() : 5;
+        }
+
+        String serialize() {
+            return getTag() + ":" + getLevel().name() + ":" + getCount();
+        }
     }
 }

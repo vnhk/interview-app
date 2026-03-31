@@ -39,6 +39,7 @@ public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements Per
     @Column(columnDefinition = "MEDIUMTEXT")
     private String feedback;
     private String status;
+    private String skillLevelConfig;
     private LocalDateTime modificationDate;
     private boolean deleted;
 
@@ -127,6 +128,14 @@ public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements Per
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getSkillLevelConfig() {
+        return skillLevelConfig;
+    }
+
+    public void setSkillLevelConfig(String skillLevelConfig) {
+        this.skillLevelConfig = skillLevelConfig;
     }
 
     @Override
