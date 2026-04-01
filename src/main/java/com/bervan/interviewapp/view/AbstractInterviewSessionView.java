@@ -126,11 +126,13 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
 
         // --- Scripted content from plan template ---
         List<InterviewSessionQuestion> sortedQuestions = session.getSessionQuestions().stream()
+                .filter(distinctById())
                 .sorted(Comparator.comparing(InterviewSessionQuestion::getQuestionNumber))
                 .collect(Collectors.toList());
 
         List<InterviewSessionCodingTask> sortedCodingTasks = session.getSessionCodingTasks() != null
                 ? session.getSessionCodingTasks().stream()
+                .filter(distinctById())
                 .sorted(Comparator.comparing(InterviewSessionCodingTask::getTaskNumber))
                 .collect(Collectors.toList())
                 : List.of();
@@ -765,6 +767,11 @@ public abstract class AbstractInterviewSessionView extends AbstractPageView impl
             case "INCORRECT" -> "#ef4444";
             default -> "#64748b";
         };
+    }
+
+    private static <T extends com.bervan.common.model.BervanOwnedBaseEntity<?>> java.util.function.Predicate<T> distinctById() {
+        Set<Object> seen = new HashSet<>();
+        return t -> t != null && t.getId() != null && seen.add(t.getId());
     }
 
     private String getDifficultyColor(int difficulty) {

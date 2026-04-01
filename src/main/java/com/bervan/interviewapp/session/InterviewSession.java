@@ -7,6 +7,8 @@ import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,9 +46,11 @@ public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements Per
     private boolean deleted;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "session", fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     private List<InterviewSessionQuestion> sessionQuestions = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "session", fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     private List<InterviewSessionCodingTask> sessionCodingTasks = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.EAGER)
