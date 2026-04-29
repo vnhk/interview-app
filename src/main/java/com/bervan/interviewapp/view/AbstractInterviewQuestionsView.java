@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
+@Deprecated
 public abstract class AbstractInterviewQuestionsView extends AbstractBervanTableView<UUID, Question> {
     public static final String ROUTE_NAME = "interview-app/interview-questions";
 
