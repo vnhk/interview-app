@@ -27,6 +27,7 @@ columns:
     inEditForm: true
     inTable: true
     required: true
+    dataType: number
 
   - field: questionDetails
     displayName: "Question Details"
@@ -55,5 +56,6 @@ columns:
     inEditForm: true
     inTable: true
     required: true
+    dataType: number
     min: 0
     max: 100
