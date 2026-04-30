@@ -23,10 +23,10 @@ import java.util.UUID;
 @RestController
 @PermitAll
 @RequestMapping("/api/interview/questions")
-public class InterviewQuestionsController extends BaseOwnedController {
+public class InterviewQuestionsRestController extends BaseOwnedController {
     private final JsonLogger log = JsonLogger.getLogger(getClass(), "interview-app");
 
-    protected InterviewQuestionsController(InterviewQuestionService service, BervanDTOMapper mapper, EntityConfigValidator validator) {
+    protected InterviewQuestionsRestController(InterviewQuestionService service, BervanDTOMapper mapper, EntityConfigValidator validator) {
         super(service, mapper, validator, "Question");
     }
 
@@ -53,7 +53,8 @@ public class InterviewQuestionsController extends BaseOwnedController {
         if (AuthService.getLoggedUserId() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        req.setId(id);
+        return super.update(req);
     }
 
     @DeleteMapping("/{id}")
