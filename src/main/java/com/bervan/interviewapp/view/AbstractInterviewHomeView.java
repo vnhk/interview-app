@@ -5,6 +5,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.List;
 
+@Deprecated
 public abstract class AbstractInterviewHomeView extends AbstractHomePageView {
 
     public static final String ROUTE_NAME = "interview-app/home";

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Deprecated
 public abstract class AbstractInterviewPlanView extends AbstractOneValueView {
     public static final String ROUTE_NAME = "interview-app/interview-plan";
 

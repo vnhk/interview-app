@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Deprecated
 public abstract class AbstractInterviewSessionView extends AbstractPageView implements HasUrlParameter<String> {
     public static final String ROUTE_NAME = "interview-app/interview-session";
     private final InterviewAppPageLayout pageLayout;

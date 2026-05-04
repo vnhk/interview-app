@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@Deprecated
 public abstract class AbstractStartInterviewView extends AbstractPageView {
     public static final String ROUTE_NAME = "interview-app/interview-process";
     private final InterviewAppPageLayout pageLayout;

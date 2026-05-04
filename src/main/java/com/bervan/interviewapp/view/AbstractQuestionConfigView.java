@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
 
+@Deprecated
 public abstract class AbstractQuestionConfigView extends AbstractBervanTableView<UUID, QuestionConfig> {
     public static final String ROUTE_NAME = "interview-app/question-config";
     private static final JsonLogger log = JsonLogger.getLogger(AbstractQuestionConfigView.class, "interview-app");

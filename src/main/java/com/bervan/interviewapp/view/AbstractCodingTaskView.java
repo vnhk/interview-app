@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component
+@Deprecated
 public abstract class AbstractCodingTaskView extends AbstractBervanTableView<UUID, CodingTask> {
     public static final String ROUTE_NAME = "interview-app/coding-tasks";
 

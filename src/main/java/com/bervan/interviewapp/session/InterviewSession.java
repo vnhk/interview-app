@@ -2,6 +2,7 @@ package com.bervan.interviewapp.session;
 
 import com.bervan.common.model.BervanOwnedBaseEntity;
 import com.bervan.common.model.PersistableTableOwnedData;
+import com.bervan.core.model.BaseModel;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
@@ -20,7 +21,7 @@ import java.util.UUID;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
-public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements PersistableTableOwnedData<UUID>, ExcelIEEntity<UUID> {
+public class InterviewSession extends BervanOwnedBaseEntity<UUID> implements PersistableTableOwnedData<UUID>, ExcelIEEntity<UUID>, BaseModel<UUID> {
     @Id
     private UUID id;
     private String candidateName;

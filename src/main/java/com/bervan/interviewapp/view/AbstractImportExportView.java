@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 
+@Deprecated
 public abstract class AbstractImportExportView extends AbstractPageView {
     public static final String ROUTE_NAME = "interview-app/import-export-data";
 
