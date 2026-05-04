@@ -10,28 +10,26 @@ import java.util.UUID;
 
 @Service
 public class CodingTaskService extends BaseService<UUID, CodingTask> {
-    private final CodingTaskRepository repository;
     private final CodingTaskHistoryRepository historyRepository;
 
     public CodingTaskService(CodingTaskRepository repository, SearchService searchService, CodingTaskHistoryRepository historyRepository) {
         super(repository, searchService);
-        this.repository = repository;
         this.historyRepository = historyRepository;
     }
 
-    @Override
-    public void save(List<CodingTask> data) {
-        repository.saveAll(data);
-    }
-
-    public CodingTask save(CodingTask codingTask) {
-        return repository.save(codingTask);
-    }
-
-    @Override
-    public void delete(CodingTask item) {
-        repository.delete(item);
-    }
+//    @Override
+//    public void save(List<CodingTask> data) {
+//        repository.saveAll(data);
+//    }
+//
+//    public CodingTask save(CodingTask codingTask) {
+//        return repository.save(codingTask);
+//    }
+//
+//    @Override
+//    public void delete(CodingTask item) {
+//        repository.delete(item);
+//    }
 
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<HistoryCodingTask> loadHistory() {
