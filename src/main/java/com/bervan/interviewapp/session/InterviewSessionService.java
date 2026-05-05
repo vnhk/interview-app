@@ -27,20 +27,6 @@ public class InterviewSessionService extends BaseService<UUID, InterviewSession>
         this.questionRepository = questionRepository;
     }
 
-    @Override
-    public void save(List<InterviewSession> data) {
-        repository.saveAll(data);
-    }
-
-    public InterviewSession save(InterviewSession session) {
-        return repository.save(session);
-    }
-
-    @Override
-    public void delete(InterviewSession item) {
-        repository.delete(item);
-    }
-
     /**
      * Saves session and all its questions through the history mechanism.
      * Pre-loads the session entity into the JPA 1st-level cache so that

@@ -5,15 +5,12 @@ import com.bervan.common.controller.BaseOwnedController;
 import com.bervan.common.mapper.BervanDTOMapper;
 import com.bervan.common.onevalue.OneValue;
 import com.bervan.common.onevalue.OneValueService;
-import com.bervan.common.service.AuthService;
 import com.bervan.interviewapp.codingtask.CodingTask;
 import com.bervan.interviewapp.codingtask.CodingTaskService;
 import com.bervan.interviewapp.interviewquestions.InterviewQuestionService;
 import com.bervan.interviewapp.interviewquestions.Question;
 import com.bervan.interviewapp.session.*;
-import jakarta.annotation.security.PermitAll;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +18,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@PermitAll
 @RequestMapping("/api/interview/sessions")
 public class InterviewSessionRestController extends BaseOwnedController {
 
@@ -48,13 +44,11 @@ public class InterviewSessionRestController extends BaseOwnedController {
     public ResponseEntity<Page<InterviewSessionDto>> list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "1000") int size) {
-        if (AuthService.getLoggedUserId() == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         return super.load(page, size, InterviewSessionDto.class);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<InterviewSessionDetailDto> getById(@PathVariable UUID id) {
-        if (AuthService.getLoggedUserId() == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         Optional<InterviewSession> opt = sessionService.loadById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(toDetailDto(opt.get()));
@@ -62,7 +56,6 @@ public class InterviewSessionRestController extends BaseOwnedController {
 
     @PostMapping
     public ResponseEntity<InterviewSessionDetailDto> create(@RequestBody CreateInterviewSessionRequest req) {
-        if (AuthService.getLoggedUserId() == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         InterviewSession session = new InterviewSession();
         session.setId(UUID.randomUUID());
@@ -128,7 +121,6 @@ public class InterviewSessionRestController extends BaseOwnedController {
 
     @PutMapping("/{id}")
     public ResponseEntity<InterviewSessionDetailDto> update(@PathVariable UUID id, @RequestBody UpdateSessionRequest req) {
-        if (AuthService.getLoggedUserId() == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         Optional<InterviewSession> opt = sessionService.loadById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
@@ -171,7 +163,6 @@ public class InterviewSessionRestController extends BaseOwnedController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (AuthService.getLoggedUserId() == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         return super.delete(id);
     }
 
