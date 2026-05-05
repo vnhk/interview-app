@@ -21,19 +21,6 @@ public class InterviewQuestionService extends BaseService<UUID, Question> {
         this.historyRepository = historyRepository;
     }
 
-    @Override
-    public void save(List<Question> data) {
-        repository.saveAll(data);
-    }
-
-    public Question save(Question question) {
-        return repository.save(question);
-    }
-
-    @Override
-    public void delete(Question item) {
-        repository.delete(item);
-    }
 
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<HistoryQuestion> loadHistory() {
@@ -81,25 +68,5 @@ public class InterviewQuestionService extends BaseService<UUID, Question> {
         return tags.stream()
                 .map(String::toLowerCase)
                 .anyMatch(questionTags::contains);
-    }
-
-    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
-    public List<Question> findByDifficultyNotSpringSecurity(Integer difficulty) {
-        return repository.findAllByDifficultyAndOwnersId(difficulty, AuthService.getLoggedUserId())
-                .stream()
-                .filter(q -> !isSecurityQuestion(q))
-                .collect(Collectors.toList());
-    }
-
-    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
-    public List<Question> findByDifficultySpringSecurity() {
-        return repository.findAllByOwnersId(AuthService.getLoggedUserId())
-                .stream()
-                .filter(this::isSecurityQuestion)
-                .collect(Collectors.toList());
-    }
-
-    private boolean isSecurityQuestion(Question q) {
-        return q.getTags() != null && q.getTags().toLowerCase().contains("security");
     }
 }
