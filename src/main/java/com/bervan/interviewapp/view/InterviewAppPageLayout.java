@@ -3,6 +3,7 @@ package com.bervan.interviewapp.view;
 import com.bervan.common.MenuNavigationComponent;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+@Deprecated
 public final class InterviewAppPageLayout extends MenuNavigationComponent {
 
     public InterviewAppPageLayout(String currentRouteName) {
