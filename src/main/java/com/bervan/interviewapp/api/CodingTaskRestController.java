@@ -6,6 +6,7 @@ import com.bervan.common.mapper.BervanDTOMapper;
 import com.bervan.interviewapp.codingtask.CodingTaskService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -20,9 +21,10 @@ public class CodingTaskRestController extends BaseOwnedController {
 
     @GetMapping
     public ResponseEntity<Page<CodingTaskDto>> list(
+            @RequestParam MultiValueMap<String, String> allParams,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "1000") int size) {
-        return super.load(page, size, CodingTaskDto.class);
+        return super.search(allParams, page, size, CodingTaskDto.class, com.bervan.interviewapp.codingtask.CodingTask.class);
     }
 
     @GetMapping("/{id}")

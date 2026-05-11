@@ -6,6 +6,7 @@ import com.bervan.common.mapper.BervanDTOMapper;
 import com.bervan.interviewapp.questionconfig.QuestionConfigService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -20,9 +21,10 @@ public class QuestionConfigRestController extends BaseOwnedController {
 
     @GetMapping
     public ResponseEntity<Page<QuestionConfigDto>> list(
+            @RequestParam MultiValueMap<String, String> allParams,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "1000") int size) {
-        return super.load(page, size, QuestionConfigDto.class);
+            @RequestParam(defaultValue = "20") int size) {
+        return super.search(allParams, page, size, QuestionConfigDto.class, com.bervan.interviewapp.questionconfig.QuestionConfig.class);
     }
 
     @GetMapping("/{id}")
