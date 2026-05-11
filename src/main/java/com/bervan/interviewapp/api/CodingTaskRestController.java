@@ -52,8 +52,8 @@ public class CodingTaskRestController extends BaseOwnedController {
     }
 
     @GetMapping("/export")
-    public ResponseEntity<byte[]> export() {
-        return super.exportAll(CodingTaskDto.class, "coding-tasks");
+    public ResponseEntity<byte[]> export(@RequestParam MultiValueMap<String, String> allParams) {
+        return super.exportAll(allParams, CodingTaskDto.class, "coding-tasks", com.bervan.interviewapp.codingtask.CodingTask.class);
     }
 
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

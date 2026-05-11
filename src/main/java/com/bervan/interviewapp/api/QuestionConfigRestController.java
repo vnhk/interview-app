@@ -52,8 +52,8 @@ public class QuestionConfigRestController extends BaseOwnedController {
     }
 
     @GetMapping("/export")
-    public ResponseEntity<byte[]> export() {
-        return super.exportAll(QuestionConfigDto.class, "question-configs");
+    public ResponseEntity<byte[]> export(@RequestParam MultiValueMap<String, String> allParams) {
+        return super.exportAll(allParams, QuestionConfigDto.class, "question-configs", com.bervan.interviewapp.questionconfig.QuestionConfig.class);
     }
 
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
