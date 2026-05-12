@@ -15,10 +15,6 @@ import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@HistorySupported
-@Table(
-        uniqueConstraints = @UniqueConstraint(columnNames = {"name", "owner.id"})
-)
 public class QuestionConfig extends BervanOwnedBaseEntity<UUID> implements PersistableTableOwnedData<UUID>, ExcelIEEntity<UUID>, BaseModel<UUID> {
     private String name;
     private Integer difficulty1Percent;
